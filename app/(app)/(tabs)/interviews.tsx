@@ -4,21 +4,25 @@ import {
     Clock,
     Edit,
     MapPin,
-    Plus,
+    Save,
     Trash2,
-    User
+    User,
+    X
 } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Modal,
     RefreshControl,
     ScrollView,
     Text,
+    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
 import { DatabaseService, Interview } from '../../../src/services/DatabaseService';
+import { InterviewService } from '../../../src/services/InterviewService';
 import { useAuthStore } from '../../../src/store/authStore';
 import { formatDate } from '../../../src/utils/helpers';
 
@@ -29,6 +33,12 @@ const InterviewsScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
+  const [editDate, setEditDate] = useState('');
+  const [editTime, setEditTime] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const fetchInterviews = useCallback(async (showRefresh = false) => {
     if (!user?.id) return;
@@ -58,42 +68,79 @@ const InterviewsScreen: React.FC = () => {
   }, [fetchInterviews]);
 
   const handleEditInterview = (interview: Interview) => {
-    // Navigate to edit interview with proper parameters
-    router.push({
-      pathname: '/(app)/interview/setup',
-      params: { id: interview.id }
-    });
+    setSelectedInterview(interview);
+    
+    // Parse current scheduled date and time
+    const scheduledDate = new Date(interview.scheduled_at || interview.created_at!);
+    const dateStr = scheduledDate.toISOString().split('T')[0];
+    const timeStr = scheduledDate.toTimeString().slice(0, 5);
+    
+    setEditDate(dateStr);
+    setEditTime(timeStr);
+    setEditModalVisible(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedInterview || !editDate || !editTime) {
+      Alert.alert('Error', 'Please select both date and time');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const newScheduledAt = new Date(`${editDate}T${editTime}:00.000Z`).toISOString();
+      
+      const success = await InterviewService.updateInterview(selectedInterview.id, {
+        scheduled_at: newScheduledAt
+      });
+
+      if (success) {
+        // Update local state
+        setInterviews(prev => prev.map(interview => 
+          interview.id === selectedInterview.id 
+            ? { ...interview, scheduled_at: newScheduledAt }
+            : interview
+        ));
+        
+        setEditModalVisible(false);
+        Alert.alert('Success', 'Interview date and time updated successfully');
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (error) {
+      console.error('Error updating interview:', error);
+      Alert.alert('Error', 'Failed to update interview. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDeleteInterview = (interview: Interview) => {
-    Alert.alert(
-      'Delete Interview',
-      `Are you sure you want to delete the interview for ${interview.role} at ${interview.company}?\n\nThis action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            setDeletingId(interview.id);
-            try {
-              const success = await DatabaseService.deleteInterview(interview.id);
-              if (success) {
-                setInterviews(prev => prev.filter(i => i.id !== interview.id));
-                Alert.alert('Success', 'Interview deleted successfully');
-              } else {
-                throw new Error('Failed to delete interview');
-              }
-            } catch (error) {
-              console.error('Error deleting interview:', error);
-              Alert.alert('Error', 'Failed to delete interview. Please try again.');
-            } finally {
-              setDeletingId(null);
-            }
-          }
-        }
-      ]
-    );
+    setSelectedInterview(interview);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedInterview) return;
+
+    setDeletingId(selectedInterview.id);
+    setDeleteModalVisible(false);
+    
+    try {
+      const success = await DatabaseService.deleteInterview(selectedInterview.id);
+      if (success) {
+        setInterviews(prev => prev.filter(i => i.id !== selectedInterview.id));
+        Alert.alert('Success', 'Interview deleted successfully');
+      } else {
+        throw new Error('Failed to delete interview');
+      }
+    } catch (error) {
+      console.error('Error deleting interview:', error);
+      Alert.alert('Error', 'Failed to delete interview. Please try again.');
+    } finally {
+      setDeletingId(null);
+      setSelectedInterview(null);
+    }
   };
 
   const onRefresh = () => {
@@ -143,6 +190,219 @@ const InterviewsScreen: React.FC = () => {
     }
   };
 
+  const renderEditModal = () => (
+    <Modal
+      visible={editModalVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setEditModalVisible(false)}
+    >
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)'
+      }}>
+        <View style={{
+          backgroundColor: 'white',
+          borderRadius: 16,
+          padding: 24,
+          margin: 20,
+          width: '90%',
+          maxWidth: 400,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 4,
+          elevation: 5
+        }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937' }}>
+              Edit Interview Time
+            </Text>
+            <TouchableOpacity
+              onPress={() => setEditModalVisible(false)}
+              style={{ padding: 4 }}
+            >
+              <X size={24} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={{ fontSize: 16, color: '#374151', marginBottom: 16 }}>
+            {selectedInterview?.role} at {selectedInterview?.company}
+          </Text>
+
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: '#1f2937', marginBottom: 8 }}>
+              Date
+            </Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: '#d1d5db',
+                borderRadius: 8,
+                padding: 12,
+                fontSize: 16,
+                backgroundColor: '#f9fafb'
+              }}
+              value={editDate}
+              onChangeText={setEditDate}
+              placeholder="YYYY-MM-DD"
+            />
+          </View>
+
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: '#1f2937', marginBottom: 8 }}>
+              Time
+            </Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: '#d1d5db',
+                borderRadius: 8,
+                padding: 12,
+                fontSize: 16,
+                backgroundColor: '#f9fafb'
+              }}
+              value={editTime}
+              onChangeText={setEditTime}
+              placeholder="HH:MM"
+            />
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableOpacity
+              onPress={() => setEditModalVisible(false)}
+              style={{
+                flex: 1,
+                backgroundColor: '#f3f4f6',
+                padding: 12,
+                borderRadius: 8,
+                alignItems: 'center'
+              }}
+            >
+              <Text style={{ color: '#6b7280', fontSize: 16, fontWeight: '600' }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              onPress={handleSaveEdit}
+              disabled={saving}
+              style={{
+                flex: 1,
+                backgroundColor: '#007AFF',
+                padding: 12,
+                borderRadius: 8,
+                alignItems: 'center',
+                opacity: saving ? 0.7 : 1
+              }}
+            >
+              {saving ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Save size={16} color="white" />
+                  <Text style={{ marginLeft: 6, color: 'white', fontSize: 16, fontWeight: '600' }}>
+                    Save
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderDeleteModal = () => (
+    <Modal
+      visible={deleteModalVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setDeleteModalVisible(false)}
+    >
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)'
+      }}>
+        <View style={{
+          backgroundColor: 'white',
+          borderRadius: 16,
+          padding: 24,
+          margin: 20,
+          width: '90%',
+          maxWidth: 400,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 4,
+          elevation: 5
+        }}>
+          <View style={{ alignItems: 'center', marginBottom: 20 }}>
+            <View style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              backgroundColor: '#fef2f2',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 16
+            }}>
+              <Trash2 size={32} color="#ef4444" />
+            </View>
+            
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937', marginBottom: 8 }}>
+              Delete Interview
+            </Text>
+            
+            <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
+              Are you sure you want to delete the interview for{'\n'}
+              <Text style={{ fontWeight: '600' }}>
+                {selectedInterview?.role} at {selectedInterview?.company}
+              </Text>
+              ?{'\n\n'}This action cannot be undone.
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableOpacity
+              onPress={() => setDeleteModalVisible(false)}
+              style={{
+                flex: 1,
+                backgroundColor: '#f3f4f6',
+                padding: 12,
+                borderRadius: 8,
+                alignItems: 'center'
+              }}
+            >
+              <Text style={{ color: '#6b7280', fontSize: 16, fontWeight: '600' }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              onPress={confirmDelete}
+              style={{
+                flex: 1,
+                backgroundColor: '#ef4444',
+                padding: 12,
+                borderRadius: 8,
+                alignItems: 'center'
+              }}
+            >
+              <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                Delete
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   const renderHeader = () => (
     <View style={{ marginBottom: 24 }}>
       <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1f2937', marginBottom: 8 }}>
@@ -170,25 +430,9 @@ const InterviewsScreen: React.FC = () => {
       <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937', marginTop: 16, marginBottom: 8 }}>
         No Upcoming Interviews
       </Text>
-      <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center', marginBottom: 24 }}>
-        Schedule your first interview to start practicing for your next opportunity
+      <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
+        Your scheduled interviews will appear here
       </Text>
-      <TouchableOpacity
-        onPress={() => router.push('/(app)/interview/setup')}
-        style={{
-          backgroundColor: '#007AFF',
-          paddingHorizontal: 24,
-          paddingVertical: 12,
-          borderRadius: 8,
-          flexDirection: 'row',
-          alignItems: 'center'
-        }}
-      >
-        <Plus size={20} color="white" />
-        <Text style={{ marginLeft: 8, color: 'white', fontSize: 16, fontWeight: '600' }}>
-          Schedule Interview
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 
@@ -287,7 +531,7 @@ const InterviewsScreen: React.FC = () => {
           >
             <Edit size={16} color="#6b7280" />
             <Text style={{ marginLeft: 6, color: '#6b7280', fontSize: 14, fontWeight: '500' }}>
-              Edit
+              Edit Time
             </Text>
           </TouchableOpacity>
 
@@ -329,56 +573,38 @@ const InterviewsScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView 
-      style={{ flex: 1, backgroundColor: '#f8fafc' }}
-      contentContainerStyle={{ padding: 20 }}
-      refreshControl={
-        <RefreshControl 
-          refreshing={refreshing} 
-          onRefresh={onRefresh}
-          colors={['#007AFF']}
-          tintColor="#007AFF"
-        />
-      }
-    >
-      {renderHeader()}
-
-      {/* Quick Action */}
-      <TouchableOpacity
-        onPress={() => router.push('/(app)/interview/setup')}
-        style={{
-          backgroundColor: '#007AFF',
-          padding: 16,
-          borderRadius: 12,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 24,
-          shadowColor: '#007AFF',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.2,
-          shadowRadius: 4,
-          elevation: 4
-        }}
+    <>
+      <ScrollView 
+        style={{ flex: 1, backgroundColor: '#f8fafc' }}
+        contentContainerStyle={{ padding: 20 }}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={['#007AFF']}
+            tintColor="#007AFF"
+          />
+        }
       >
-        <Plus size={20} color="white" />
-        <Text style={{ marginLeft: 8, color: 'white', fontSize: 16, fontWeight: '600' }}>
-          Schedule New Interview
-        </Text>
-      </TouchableOpacity>
+        {renderHeader()}
 
-      {/* Interviews List */}
-      {interviews.length === 0 ? (
-        renderEmptyState()
-      ) : (
-        <View>
-          <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginBottom: 16 }}>
-            {interviews.length} Upcoming Interview{interviews.length > 1 ? 's' : ''}
-          </Text>
-          {interviews.map(renderInterviewCard)}
-        </View>
-      )}
-    </ScrollView>
+        {/* Interviews List */}
+        {interviews.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <View>
+            <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginBottom: 16 }}>
+              {interviews.length} Upcoming Interview{interviews.length > 1 ? 's' : ''}
+            </Text>
+            {interviews.map(renderInterviewCard)}
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Modals */}
+      {renderEditModal()}
+      {renderDeleteModal()}
+    </>
   );
 };
 

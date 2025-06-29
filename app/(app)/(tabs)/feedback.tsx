@@ -5,8 +5,7 @@ import {
     Clock,
     Eye,
     Star,
-    Trash2,
-    TrendingUp
+    Trash2
 } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -56,8 +55,11 @@ const FeedbackScreen: React.FC = () => {
   }, [fetchCompletedInterviews]);
 
   const handleViewFeedback = (interview: Interview) => {
-    // Navigate to detailed feedback view (will create this route later)
-    Alert.alert('View Feedback', `Detailed feedback for ${interview.title || interview.role} will be available soon.`);
+    // Navigate to detailed feedback view
+    router.push({
+      pathname: '/(app)/feedback/[id]',
+      params: { id: interview.id }
+    });
   };
 
   const handleDeleteInterview = (interview: Interview) => {
@@ -105,57 +107,7 @@ const FeedbackScreen: React.FC = () => {
     </View>
   );
 
-  const renderStatsCard = () => {
-    if (interviews.length === 0) return null;
-
-    const totalScore = interviews.reduce((sum, interview) => sum + (interview.score || 0), 0);
-    const averageScore = Math.round(totalScore / interviews.length);
-    const recentImprovement = interviews.length >= 2 
-      ? (interviews[0].score || 0) - (interviews[interviews.length - 1].score || 0)
-      : 0;
-
-    return (
-      <View style={{
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 12,
-        marginBottom: 24,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2
-      }}>
-        <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginBottom: 16 }}>
-          Performance Overview
-        </Text>
-        <View style={{ flexDirection: 'row', gap: 16 }}>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', color: getScoreColor(averageScore) }}>
-              {averageScore}%
-            </Text>
-            <Text style={{ fontSize: 12, color: '#6b7280' }}>Average Score</Text>
-          </View>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#3b82f6' }}>
-              {interviews.length}
-            </Text>
-            <Text style={{ fontSize: 12, color: '#6b7280' }}>Completed</Text>
-          </View>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ 
-              fontSize: 24, 
-              fontWeight: 'bold', 
-              color: recentImprovement >= 0 ? '#10b981' : '#ef4444' 
-            }}>
-              {recentImprovement > 0 ? '+' : ''}{Math.round(recentImprovement)}%
-            </Text>
-            <Text style={{ fontSize: 12, color: '#6b7280' }}>Improvement</Text>
-          </View>
-        </View>
-      </View>
-    );
-  };
+  // Performance overview removed as requested
 
   const renderEmptyState = () => (
     <View style={{
@@ -173,22 +125,9 @@ const FeedbackScreen: React.FC = () => {
       <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937', marginTop: 16, marginBottom: 8 }}>
         No Completed Interviews
       </Text>
-      <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center', marginBottom: 24 }}>
+      <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
         Complete your first interview to see detailed feedback and analytics
       </Text>
-      <TouchableOpacity
-        onPress={() => router.push('/(app)/interview/setup')}
-        style={{
-          backgroundColor: '#007AFF',
-          paddingHorizontal: 24,
-          paddingVertical: 12,
-          borderRadius: 8
-        }}
-      >
-        <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
-          Start Interview
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 
@@ -318,33 +257,16 @@ const FeedbackScreen: React.FC = () => {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       {renderHeader()}
-      {renderStatsCard()}
 
       {/* Feedback List */}
       {interviews.length === 0 ? (
         renderEmptyState()
       ) : (
         <View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <View style={{ marginBottom: 16 }}>
             <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937' }}>
               {interviews.length} Completed Interview{interviews.length > 1 ? 's' : ''}
             </Text>
-            <TouchableOpacity
-              onPress={() => router.push('/(app)/interview/setup')}
-              style={{
-                backgroundColor: '#f3f4f6',
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 6,
-                flexDirection: 'row',
-                alignItems: 'center'
-              }}
-            >
-              <TrendingUp size={14} color="#6b7280" />
-              <Text style={{ marginLeft: 4, color: '#6b7280', fontSize: 12, fontWeight: '500' }}>
-                Practice More
-              </Text>
-            </TouchableOpacity>
           </View>
           {interviews.map(renderInterviewCard)}
         </View>
