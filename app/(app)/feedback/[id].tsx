@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
     ArrowLeft,
@@ -24,8 +25,9 @@ import {
 import { LoadingComponent } from '../../../src/components';
 import { DatabaseService, Feedback, Interview } from '../../../src/services/DatabaseService';
 import { useAuthStore } from '../../../src/store/authStore';
-import { useThemeColors } from '../../../src/store/themeStore';
+import { getElevation, useThemeColors, useThemeStore } from '../../../src/store/themeStore';
 import { getScoreColor } from '../../../src/utils/helpers';
+import { borderRadius, rf, spacing, typography } from '../../../src/utils/responsive';
 
 type TabType = 'summary' | 'skills' | 'transcript' | 'analysis';
 
@@ -34,10 +36,15 @@ const FeedbackDetailScreen: React.FC = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuthStore();
   const colors = useThemeColors();
+  const { theme } = useThemeStore();
   const [interview, setInterview] = useState<Interview | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('summary');
+
+  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
+    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
+    : ['#0f172a', '#1e293b', '#334155'] as const);
 
   useEffect(() => {
     loadFeedbackData();
@@ -893,19 +900,26 @@ Explore more creative problem-solving approaches and think beyond conventional s
   );
 
   const renderTranscriptTab = () => (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white', marginBottom: 20 }}>
+    <View style={{ padding: spacing.lg }}>
+      <Text style={{ 
+        fontSize: typography.titleLarge, 
+        fontWeight: 'bold',
+        color: colors.text, 
+        marginBottom: spacing.lg 
+      }}>
         Interview Transcript
       </Text>
       
-      <View style={{ 
-        backgroundColor: '#334155', 
-        borderRadius: 12, 
-        padding: 16
-      }}>
+      <View style={[{ 
+        backgroundColor: colors.surface,
+        borderRadius: borderRadius.lg, 
+        padding: spacing.md,
+        borderWidth: 1,
+        borderColor: colors.borderLight
+      }, getElevation(2, theme)]}>
         <Text style={{ 
-          fontSize: 14, 
-          color: '#e2e8f0', 
+          fontSize: rf(14), 
+          color: colors.textSecondary, 
           lineHeight: 22,
           fontFamily: 'monospace'
         }}>
@@ -924,14 +938,29 @@ Explore more creative problem-solving approaches and think beyond conventional s
     
     if (!analysisText || typeof analysisText !== 'string') {
       return (
-        <View style={{ padding: 20 }}>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white', marginBottom: 20 }}>
+        <View style={{ padding: spacing.lg }}>
+          <Text style={{ 
+            fontSize: typography.titleLarge, 
+            fontWeight: 'bold',
+            color: colors.text, 
+            marginBottom: spacing.lg 
+          }}>
             Detailed Analysis
           </Text>
-          <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center', marginTop: 40 }}>
+          <Text style={{ 
+            fontSize: rf(14), 
+            color: colors.textSecondary, 
+            textAlign: 'center', 
+            marginTop: spacing.xl 
+          }}>
             Analysis data not available for this interview.
           </Text>
-          <Text style={{ fontSize: 12, color: '#64748b', textAlign: 'center', marginTop: 8 }}>
+          <Text style={{ 
+            fontSize: rf(12), 
+            color: colors.textTertiary, 
+            textAlign: 'center', 
+            marginTop: spacing.sm 
+          }}>
             Debug: feedback={feedback ? 'exists' : 'null'}, analysis={analysisText ? 'exists' : 'null'}
           </Text>
         </View>
@@ -950,7 +979,7 @@ Explore more creative problem-solving approaches and think beyond conventional s
         if (!trimmedLine && index < lines.length - 1) {
           // Empty line - add spacing
           components.push(
-            <View key={`space-${currentIndex++}`} style={{ height: 12 }} />
+            <View key={`space-${currentIndex++}`} style={{ height: spacing.sm }} />
           );
           return;
         }
@@ -960,11 +989,11 @@ Explore more creative problem-solving approaches and think beyond conventional s
           const headerText = trimmedLine.substring(2);
           components.push(
             <Text key={`h1-${currentIndex++}`} style={{
-              fontSize: 20,
+              fontSize: typography.titleLarge,
               fontWeight: 'bold',
-              color: 'white',
-              marginBottom: 16,
-              marginTop: index > 0 ? 24 : 0
+              color: colors.text,
+              marginBottom: spacing.md,
+              marginTop: index > 0 ? spacing.xl : 0
             }}>
               {headerText}
             </Text>
@@ -977,11 +1006,11 @@ Explore more creative problem-solving approaches and think beyond conventional s
           const headerText = trimmedLine.substring(3);
           components.push(
             <Text key={`h2-${currentIndex++}`} style={{
-              fontSize: 18,
+              fontSize: typography.title,
               fontWeight: '600',
-              color: '#e2e8f0',
-              marginBottom: 12,
-              marginTop: 20
+              color: colors.text,
+              marginBottom: spacing.sm,
+              marginTop: spacing.lg
             }}>
               {headerText}
             </Text>
@@ -997,26 +1026,26 @@ Explore more creative problem-solving approaches and think beyond conventional s
           const titleText = headerText.replace(/\s*\(Score: \d+%\)/, '');
           
           components.push(
-            <View key={`h3-container-${currentIndex++}`} style={{
-              backgroundColor: '#1e293b',
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 16,
-              marginTop: 8,
+            <View key={`h3-container-${currentIndex++}`} style={[{
+              backgroundColor: colors.cardSecondary,
+              borderRadius: borderRadius.lg,
+              padding: spacing.md,
+              marginBottom: spacing.md,
+              marginTop: spacing.sm,
               borderLeftWidth: 4,
-              borderLeftColor: '#3b82f6'
-            }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              borderLeftColor: colors.primary
+            }, getElevation(1, theme)]}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm }}>
                 <Text style={{
-                  fontSize: 16,
+                  fontSize: typography.subtitle,
                   fontWeight: '600',
-                  color: 'white'
+                  color: colors.text
                 }}>
                   {titleText}
                 </Text>
                 {scoreMatch && (
                   <Text style={{
-                    fontSize: 14,
+                    fontSize: rf(14),
                     fontWeight: 'bold',
                     color: getScoreColor(parseInt(scoreMatch[1]))
                   }}>
@@ -1035,13 +1064,13 @@ Explore more creative problem-solving approaches and think beyond conventional s
           components.push(
             <View key={`bullet-${currentIndex++}`} style={{
               flexDirection: 'row',
-              marginBottom: 8,
-              paddingLeft: 16
+              marginBottom: spacing.sm,
+              paddingLeft: spacing.md
             }}>
-              <Text style={{ color: '#3b82f6', marginRight: 8, marginTop: 2 }}>•</Text>
+              <Text style={{ color: colors.primary, marginRight: spacing.sm, marginTop: 2 }}>•</Text>
               <Text style={{
-                fontSize: 14,
-                color: '#cbd5e1',
+                fontSize: rf(14),
+                color: colors.textSecondary,
                 lineHeight: 20,
                 flex: 1
               }}>
@@ -1062,7 +1091,7 @@ Explore more creative problem-solving approaches and think beyond conventional s
               // Regular text
               if (part) {
                 textComponents.push(
-                  <Text key={`regular-${partIndex}`} style={{ color: '#cbd5e1' }}>
+                  <Text key={`regular-${partIndex}`} style={{ color: colors.textSecondary }}>
                     {part}
                   </Text>
                 );
@@ -1071,7 +1100,7 @@ Explore more creative problem-solving approaches and think beyond conventional s
               // Bold text
               textComponents.push(
                 <Text key={`bold-${partIndex}`} style={{ 
-                  color: '#e2e8f0', 
+                  color: colors.text, 
                   fontWeight: '600' 
                 }}>
                   {part}
@@ -1082,10 +1111,10 @@ Explore more creative problem-solving approaches and think beyond conventional s
 
           components.push(
             <Text key={`formatted-${currentIndex++}`} style={{
-              fontSize: 14,
+              fontSize: rf(14),
               lineHeight: 20,
-              marginBottom: 12,
-              paddingLeft: 16
+              marginBottom: spacing.sm,
+              paddingLeft: spacing.md
             }}>
               {textComponents}
             </Text>
@@ -1100,42 +1129,42 @@ Explore more creative problem-solving approaches and think beyond conventional s
             const priority = priorityMatch[1];
             const title = priorityMatch[2];
             const priorityColors = {
-              High: '#ef4444',
-              Medium: '#f59e0b',
-              Low: '#10b981'
+              High: colors.error,
+              Medium: colors.warning,
+              Low: colors.success
             };
 
             components.push(
-              <View key={`priority-${currentIndex++}`} style={{
-                backgroundColor: '#1e293b',
-                borderRadius: 12,
-                padding: 16,
-                marginBottom: 12,
+              <View key={`priority-${currentIndex++}`} style={[{
+                backgroundColor: colors.cardSecondary,
+                borderRadius: borderRadius.lg,
+                padding: spacing.md,
+                marginBottom: spacing.md,
+                marginTop: spacing.sm,
                 borderLeftWidth: 4,
-                borderLeftColor: '#06b6d4'
-              }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                borderLeftColor: priorityColors[priority as keyof typeof priorityColors]
+              }, getElevation(1, theme)]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
                   <Text style={{
-                    fontSize: 14,
+                    fontSize: rf(12),
+                    fontWeight: 'bold',
+                    color: priorityColors[priority as keyof typeof priorityColors],
+                    backgroundColor: colors.surface,
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: 2,
+                    borderRadius: borderRadius.sm,
+                    marginRight: spacing.sm
+                  }}>
+                    {priority.toUpperCase()}
+                  </Text>
+                  <Text style={{
+                    fontSize: rf(14),
                     fontWeight: '600',
-                    color: '#e2e8f0'
+                    color: colors.text,
+                    flex: 1
                   }}>
                     {title}
                   </Text>
-                  <View style={{
-                    backgroundColor: priorityColors[priority as keyof typeof priorityColors],
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderRadius: 4
-                  }}>
-                    <Text style={{
-                      fontSize: 11,
-                      fontWeight: '500',
-                      color: 'white'
-                    }}>
-                      {priority} Priority
-                    </Text>
-                  </View>
                 </View>
               </View>
             );
@@ -1143,43 +1172,17 @@ Explore more creative problem-solving approaches and think beyond conventional s
           }
         }
 
-        // Regular paragraph text
-        if (trimmedLine && !trimmedLine.startsWith('---') && !trimmedLine.startsWith('*Analysis generated')) {
+        // Regular text
+        if (trimmedLine) {
           components.push(
             <Text key={`text-${currentIndex++}`} style={{
-              fontSize: 14,
-              color: '#cbd5e1',
-              lineHeight: 20,
-              marginBottom: 12,
-              paddingLeft: 16
+              fontSize: rf(14),
+              color: colors.textSecondary,
+              lineHeight: 22,
+              marginBottom: spacing.sm,
+              paddingLeft: spacing.md
             }}>
               {trimmedLine}
-            </Text>
-          );
-        }
-
-        // Separator line (---)
-        if (trimmedLine.startsWith('---')) {
-          components.push(
-            <View key={`separator-${currentIndex++}`} style={{
-              height: 1,
-              backgroundColor: '#334155',
-              marginVertical: 20
-            }} />
-          );
-        }
-
-        // Footer text (*Analysis generated...)
-        if (trimmedLine.startsWith('*Analysis generated')) {
-          components.push(
-            <Text key={`footer-${currentIndex++}`} style={{
-              fontSize: 12,
-              color: '#64748b',
-              fontStyle: 'italic',
-              textAlign: 'center',
-              marginTop: 12
-            }}>
-              {trimmedLine.replace(/^\*/, '').replace(/\*$/, '')}
             </Text>
           );
         }
@@ -1189,15 +1192,26 @@ Explore more creative problem-solving approaches and think beyond conventional s
     };
 
     return (
-      <View style={{ padding: 20 }}>
-        <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white', marginBottom: 20 }}>
+      <ScrollView style={{ padding: spacing.lg }}>
+        <Text style={{ 
+          fontSize: typography.titleLarge, 
+          fontWeight: 'bold',
+          color: colors.text, 
+          marginBottom: spacing.lg 
+        }}>
           Detailed Analysis
         </Text>
         
-        <ScrollView style={{ flex: 1 }} nestedScrollEnabled={true}>
+        <View style={[{
+          backgroundColor: colors.surface,
+          borderRadius: borderRadius.lg,
+          padding: spacing.md,
+          borderWidth: 1,
+          borderColor: colors.borderLight
+        }, getElevation(1, theme)]}>
           {renderMarkdownText(analysisText)}
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
     );
   };
 
@@ -1219,102 +1233,49 @@ Explore more creative problem-solving approaches and think beyond conventional s
   if (loading) {
     return (
       <LoadingComponent 
-        message="Loading feedback..."
+        message="Loading feedback details..."
         size="large"
       />
     );
   }
 
-  if (!interview) {
+  if (!interview || !feedback) {
     return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: colors.background,
-        paddingHorizontal: 32
-      }}>
-        <View style={{
-          backgroundColor: colors.surface,
-          width: 100,
-          height: 100,
-          borderRadius: 50,
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 24,
-          borderWidth: 2,
-          borderColor: colors.borderLight,
-          borderStyle: 'dashed',
-        }}>
-          <FileText size={40} color={colors.textTertiary} />
-        </View>
-        
-        <Text style={{ 
-          fontSize: 24, 
-          fontWeight: '700', 
-          color: colors.text, 
-          marginBottom: 8,
-          textAlign: 'center'
-        }}>
-          Interview not found
-        </Text>
-        
-        <Text style={{ 
-          fontSize: 16, 
-          color: colors.textSecondary, 
-          marginBottom: 32, 
-          textAlign: 'center',
-          lineHeight: 22
-        }}>
-          The interview data could not be loaded. Please try again later.
-        </Text>
-        
-        <TouchableOpacity 
-          onPress={() => router.back()}
-          style={{ 
-            backgroundColor: colors.primary, 
-            paddingHorizontal: 24, 
-            paddingVertical: 14, 
-            borderRadius: 12,
-            shadowColor: colors.primary,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 8,
-          }}
-        >
-          <Text style={{ 
-            color: colors.textInverse, 
-            fontWeight: '600',
-            fontSize: 16
-          }}>
-            Go Back
+      <LinearGradient colors={gradientColors as any} style={{ flex: 1 }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
+          <Text style={{ fontSize: 18, color: colors.text, textAlign: 'center' }}>
+            Feedback not found
           </Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            style={{ 
+              marginTop: 16, 
+              backgroundColor: colors.primary, 
+              paddingHorizontal: 24, 
+              paddingVertical: 12, 
+              borderRadius: 8 
+            }}
+          >
+            <Text style={{ color: colors.textInverse, fontWeight: '600' }}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {renderHeader()}
-      
-      <ScrollView 
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
-      >
-        {renderOverallScore()}
-        {renderKeyMetrics()}
-        {renderInterviewConfig()}
-        
-        {renderTabs()}
-        
-        <View style={{ backgroundColor: colors.background }}>
+    <LinearGradient colors={gradientColors as any} style={{ flex: 1 }}>
+      <View style={{ flex: 1, paddingTop: 32 }}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          {renderHeader()}
+          {renderOverallScore()}
+          {renderKeyMetrics()}
+          {renderInterviewConfig()}
+          {renderTabs()}
           {renderTabContent()}
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </LinearGradient>
   );
 };
 

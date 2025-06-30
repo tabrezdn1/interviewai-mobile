@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Calendar, CreditCard, Settings } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -5,7 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,6 +25,20 @@ const Billing: React.FC = () => {
   const [conversationMinutes, setConversationMinutes] = useState<any>(null);
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
   const [stripeError, setStripeError] = useState<string | null>(null);
+
+  // Add colors and gradient configuration
+  const colors = {
+    background: '#f8fafc',
+    text: '#1f2937',
+    textSecondary: '#6b7280',
+    primary: '#3b82f6',
+    surface: '#ffffff',
+    gradientBackground: null
+  };
+
+  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
+    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
+    : ['#0f172a', '#1e293b', '#334155'] as const);
 
   useEffect(() => {
     const loadBillingData = async () => {
@@ -113,118 +127,108 @@ const Billing: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.badge}>
-            <CreditCard size={16} color="#3B82F6" />
-            <Text style={styles.badgeText}>Billing & Subscription</Text>
+    <LinearGradient colors={gradientColors as any} style={{ flex: 1 }}>
+      <View style={{ flex: 1, paddingTop: 32 }}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.badge}>
+              <CreditCard size={16} color="#3B82F6" />
+              <Text style={styles.badgeText}>Billing & Subscription</Text>
+            </View>
+            <Text style={styles.title}>Manage Your Plan</Text>
+            <Text style={styles.subtitle}>
+              View your subscription details and manage your billing information
+            </Text>
           </View>
-          <Text style={styles.title}>Manage Your Plan</Text>
-          <Text style={styles.subtitle}>
-            View your subscription details and manage your billing information
-          </Text>
-        </View>
 
-        {/* Current Plan */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Current Plan</Text>
-            <TouchableOpacity style={styles.upgradeButton} onPress={() => router.push('/(app)/(tabs)/pricing')}>
-              <Text style={styles.upgradeButtonText}>Upgrade</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.planInfo}>
-            <View style={styles.planDetails}>
-              <Text style={styles.planName}>{currentSubscription.plan.charAt(0).toUpperCase() + currentSubscription.plan.slice(1)} Plan</Text>
-              <Text style={styles.planPrice}>{currentSubscription.price}/{currentSubscription.period}</Text>
-              {currentSubscription.nextBilling && (
-                <Text style={styles.nextBilling}>
-                  Next billing: {new Date(currentSubscription.nextBilling).toLocaleDateString()}
-                </Text>
-              )}
+          {/* Current Plan */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Current Plan</Text>
+              <TouchableOpacity style={styles.upgradeButton} onPress={() => router.push('/(app)/(tabs)/pricing')}>
+                <Text style={styles.upgradeButtonText}>Upgrade</Text>
+              </TouchableOpacity>
             </View>
             
-            <View style={styles.usageInfo}>
-              <Text style={styles.usageTitle}>Conversation Minutes</Text>
-              <View style={styles.usageBar}>
-                <View style={[styles.usageProgress, { 
-                  width: `${(currentSubscription.minutesUsed / currentSubscription.minutesTotal) * 100}%` 
-                }]} />
-              </View>
-              <Text style={styles.usageText}>
-                {currentSubscription.minutesUsed} / {currentSubscription.minutesTotal} minutes used
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Billing Management */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Billing Management</Text>
-          
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={handleManageBilling}
-            disabled={isLoadingPortal}
-          >
-            <View style={styles.actionButtonContent}>
-              <Settings size={20} color="#374151" />
-              <View style={styles.actionButtonText}>
-                <Text style={styles.actionButtonTitle}>Manage Billing</Text>
-                <Text style={styles.actionButtonSubtitle}>Update payment methods, view invoices</Text>
-              </View>
-            </View>
-            {isLoadingPortal && <ActivityIndicator size="small" color="#6B7280" />}
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => router.push('/(app)/(tabs)/pricing')}
-          >
-            <View style={styles.actionButtonContent}>
-              <Calendar size={20} color="#374151" />
-              <View style={styles.actionButtonText}>
-                <Text style={styles.actionButtonTitle}>Change Plan</Text>
-                <Text style={styles.actionButtonSubtitle}>Upgrade or downgrade your subscription</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Plan Comparison */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Available Plans</Text>
-          
-          {Object.values(PRICING_PLANS).map((plan) => (
-            <View key={plan.id} style={[
-              styles.planOption,
-              currentSubscription.plan === plan.id && styles.currentPlanOption
-            ]}>
-              <View style={styles.planOptionHeader}>
-                <Text style={styles.planOptionName}>{plan.name}</Text>
-                {currentSubscription.plan === plan.id && (
-                  <View style={styles.currentBadge}>
-                    <Text style={styles.currentBadgeText}>Current</Text>
-                  </View>
+            <View style={styles.planInfo}>
+              <View style={styles.planDetails}>
+                <Text style={styles.planName}>{currentSubscription.plan.charAt(0).toUpperCase() + currentSubscription.plan.slice(1)} Plan</Text>
+                <Text style={styles.planPrice}>{currentSubscription.price}/{currentSubscription.period}</Text>
+                {currentSubscription.nextBilling && (
+                  <Text style={styles.nextBilling}>
+                    Next billing: {new Date(currentSubscription.nextBilling).toLocaleDateString()}
+                  </Text>
                 )}
               </View>
-              <Text style={styles.planOptionPrice}>
-                ${(plan.monthly.price / 100).toFixed(2)}/month
-              </Text>
-              <Text style={styles.planOptionMinutes}>
-                {plan.monthly.minutes} conversation minutes
-              </Text>
-              <Text style={styles.planOptionDescription}>
-                {plan.description}
-              </Text>
+              
+              <View style={styles.usageInfo}>
+                <Text style={styles.usageTitle}>Conversation Minutes</Text>
+                <View style={styles.usageBar}>
+                  <View style={[styles.usageProgress, { 
+                    width: `${(currentSubscription.minutesUsed / currentSubscription.minutesTotal) * 100}%` 
+                  }]} />
+                </View>
+                <Text style={styles.usageText}>
+                  {currentSubscription.minutesUsed} / {currentSubscription.minutesTotal} minutes used
+                </Text>
+              </View>
             </View>
-          ))}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          </View>
+
+          {/* Billing Management */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Billing Management</Text>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={handleManageBilling}
+              disabled={isLoadingPortal}
+            >
+              <View style={styles.actionButtonContent}>
+                <Settings size={20} color="#374151" />
+                <View style={styles.actionButtonText}>
+                  <Text style={styles.actionButtonTitle}>Manage Billing</Text>
+                  <Text style={styles.actionButtonSubtitle}>Update payment methods, view invoices</Text>
+                </View>
+              </View>
+              {isLoadingPortal && <ActivityIndicator size="small" color="#6B7280" />}
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => router.push('/(app)/(tabs)/pricing')}
+            >
+              <View style={styles.actionButtonContent}>
+                <Calendar size={20} color="#374151" />
+                <View style={styles.actionButtonText}>
+                  <Text style={styles.actionButtonTitle}>Change Plan</Text>
+                  <Text style={styles.actionButtonSubtitle}>Upgrade or downgrade your subscription</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Plan Comparison */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Available Plans</Text>
+            
+            {PRICING_PLANS.map((plan) => (
+              <View key={plan.name} style={styles.planOption}>
+                <View style={styles.planOptionContent}>
+                  <Text style={styles.planOptionName}>{plan.name}</Text>
+                  <Text style={styles.planOptionPrice}>${plan.price}/{plan.billing}</Text>
+                  <Text style={styles.planOptionFeatures}>{plan.features}</Text>
+                </View>
+                <TouchableOpacity style={styles.selectPlanButton}>
+                  <Text style={styles.selectPlanButtonText}>Select</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -435,6 +439,24 @@ const styles = StyleSheet.create({
   planOptionDescription: {
     fontSize: 13,
     color: '#9CA3AF',
+  },
+  planOptionContent: {
+    flex: 1,
+  },
+  selectPlanButton: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  selectPlanButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  planOptionFeatures: {
+    fontSize: 14,
+    color: '#6B7280',
   },
 });
 

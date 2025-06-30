@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import {
   BarChart3,
@@ -104,6 +105,10 @@ const FeedbackScreen: React.FC = () => {
     if (score >= 60) return colors.warning;
     return colors.error;
   };
+
+  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
+    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
+    : ['#0f172a', '#1e293b', '#334155'] as const);
 
   const renderHeader = () => (
     <View style={{
@@ -417,30 +422,29 @@ const FeedbackScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView 
-      style={{ flex: 1, backgroundColor: colors.background }}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 20 }}
-      refreshControl={
-        <RefreshControl 
-          refreshing={refreshing} 
-          onRefresh={onRefresh}
-          colors={[colors.primary]}
-          tintColor={colors.primary}
-        />
-      }
-    >
-      {renderHeader()}
-
-      {/* Feedback List */}
-      {interviews.length === 0 ? (
-        renderEmptyState()
-      ) : (
-        <View>
-          {interviews.map(renderInterviewCard)}
-        </View>
-      )}
-    </ScrollView>
+    <LinearGradient colors={gradientColors as any} style={{ flex: 1 }}>
+      <View style={{ flex: 1, paddingTop: 32 }}>
+        <ScrollView 
+          style={{ flex: 1 }}
+          contentContainerStyle={{ 
+            paddingBottom: 100,
+            flexGrow: 1
+          }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {renderHeader()}
+          
+          {interviews.length === 0 ? renderEmptyState() : (
+            <View style={{ paddingHorizontal: 24, gap: 16 }}>
+              {interviews.map(renderInterviewCard)}
+            </View>
+          )}
+        </ScrollView>
+      </View>
+    </LinearGradient>
   );
 };
 

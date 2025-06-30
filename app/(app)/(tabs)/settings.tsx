@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import {
   ArrowLeft,
@@ -21,21 +22,26 @@ import {
   Alert,
   Image,
   Linking,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DatabaseService, Profile, Subscription, SubscriptionPlan } from '../../../src/services/DatabaseService';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useThemeColors, useThemeStore } from '../../../src/store/themeStore';
+import {
+  spacing,
+  typography
+} from '../../../src/utils/responsive';
 
 export default function SettingsScreen() {
   const { user, signOut } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
   const [isAnnual, setIsAnnual] = useState(false);
 
   const [currentView, setCurrentView] = useState<'main' | 'billing' | 'faq' | 'contact'>('main');
@@ -43,6 +49,10 @@ export default function SettingsScreen() {
   const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
+    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
+    : ['#0f172a', '#1e293b', '#334155'] as const);
 
   useEffect(() => {
     if (user) {
@@ -211,34 +221,33 @@ export default function SettingsScreen() {
       <>
         {/* Modern Header */}
         <View style={{
-          marginBottom: 32,
-          paddingHorizontal: 24,
-          paddingTop: 8,
+          marginBottom: spacing.xl,
+          paddingTop: spacing.lg, // Increased to match other screens
         }}>
           <View style={{ marginBottom: 16 }}>
             <Text style={{ 
-              fontSize: 32, 
+              fontSize: typography.headlineLarge, 
               fontWeight: '800', 
               color: colors.text, 
-              marginBottom: 4,
-              letterSpacing: -0.5
+              marginBottom: spacing.md,
+              lineHeight: typography.headlineLarge * 1.2,
             }}>
               Settings
             </Text>
             <Text style={{ 
-              fontSize: 16, 
+              fontSize: typography.bodyLarge, 
               color: colors.textSecondary,
-              fontWeight: '500'
+              lineHeight: typography.bodyLarge * 1.4,
+              fontWeight: '500',
             }}>
-              Manage your account, preferences and billing
+              Manage your account and preferences
             </Text>
           </View>
         </View>
 
         {/* Enhanced Profile Section */}
         <View style={{
-          marginBottom: 32,
-          paddingHorizontal: 24,
+          marginBottom: spacing.xl,
         }}>
           <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
             Profile
@@ -313,8 +322,7 @@ export default function SettingsScreen() {
 
         {/* Preferences Section */}
         <View style={{
-          marginBottom: 32,
-          paddingHorizontal: 24,
+          marginBottom: spacing.xl,
         }}>
           <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
             Preferences
@@ -390,8 +398,7 @@ export default function SettingsScreen() {
 
         {/* Billing Section */}
         <View style={{
-          marginBottom: 32,
-          paddingHorizontal: 24,
+          marginBottom: spacing.xl,
         }}>
           <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
             Billing & Subscription
@@ -453,8 +460,7 @@ export default function SettingsScreen() {
 
         {/* Account Section */}
         <View style={{
-          marginBottom: 32,
-          paddingHorizontal: 24,
+          marginBottom: spacing.xl,
         }}>
           <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
             Account
@@ -527,8 +533,7 @@ export default function SettingsScreen() {
 
         {/* App Info Section */}
         <View style={{
-          marginBottom: 32,
-          paddingHorizontal: 24,
+          marginBottom: spacing.xl,
         }}>
           <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
             About This App
@@ -571,8 +576,7 @@ export default function SettingsScreen() {
 
         {/* Support Section */}
         <View style={{
-          marginBottom: 32,
-          paddingHorizontal: 24,
+          marginBottom: spacing.xl,
         }}>
           <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
             Support
@@ -626,7 +630,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* Sign Out Button */}
-        <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
+        <View style={{ paddingBottom: spacing.xl }}>
           {(() => {
             console.log('[Settings] Rendering Sign Out button');
             return (
@@ -710,22 +714,57 @@ export default function SettingsScreen() {
     
     return (
       <>
-        <View style={[styles.header, { backgroundColor: colors.background }]}>
-          <TouchableOpacity
+        {/* Updated Header with modern back button */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          marginBottom: 24, 
+          paddingHorizontal: spacing.lg,
+          paddingTop: 12
+        }}>
+          <TouchableOpacity 
             onPress={() => setCurrentView('main')}
-            style={styles.backButton}
+            style={{ 
+              marginRight: 12,
+              backgroundColor: colors.surface,
+              padding: 10,
+              borderRadius: 10,
+              shadowColor: colors.shadow,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.08,
+              shadowRadius: 3,
+              elevation: 3,
+              borderWidth: 1,
+              borderColor: colors.borderLight,
+            }}
           >
-            <ArrowLeft size={24} color={colors.text} />
+            <ArrowLeft size={18} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>Billing & Plans</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ 
+              fontSize: 24, 
+              fontWeight: '800', 
+              color: colors.text,
+              letterSpacing: -0.5,
+              marginBottom: 2
+            }}>
+              Billing & Plans
+            </Text>
+            <Text style={{ 
+              fontSize: 14, 
+              color: colors.textSecondary,
+              fontWeight: '500'
+            }}>
+              Manage your subscription and billing
+            </Text>
+          </View>
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           {/* Current Plan - Compact Version */}
           <View style={{ 
-            paddingHorizontal: 20, 
-            paddingTop: 8,
-            paddingBottom: 24 
+            paddingTop: spacing.sm,
+            paddingBottom: spacing.lg 
           }}>
             <Text style={{ 
               fontSize: 18, 
@@ -784,8 +823,7 @@ export default function SettingsScreen() {
 
           {/* Billing Notice */}
           <View style={{ 
-            paddingHorizontal: 20, 
-            marginBottom: 24 
+            marginBottom: spacing.lg 
           }}>
             <View style={{
               backgroundColor: colors.primary + '08',
@@ -820,8 +858,7 @@ export default function SettingsScreen() {
 
           {/* Available Plans */}
           <View style={{ 
-            paddingHorizontal: 20,
-            paddingBottom: 32 
+            paddingBottom: spacing.xl 
           }}>
             <View style={{ 
               flexDirection: 'row', 
@@ -863,7 +900,6 @@ export default function SettingsScreen() {
                     Monthly
                   </Text>
                 </TouchableOpacity>
-                
                 <TouchableOpacity
                   style={{
                     paddingHorizontal: 12,
@@ -878,198 +914,143 @@ export default function SettingsScreen() {
                     fontWeight: '600',
                     color: isAnnual ? colors.textInverse : colors.textSecondary,
                   }}>
-                    Annual
+                    Yearly
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
 
-                         {/* Savings Badge */}
-             {isAnnual && (
-               <View style={{
-                 backgroundColor: colors.success + '15',
-                 borderRadius: 8,
-                 padding: 10,
-                 marginBottom: 16,
-                 alignItems: 'center',
-               }}>
-                 <Text style={{
-                   fontSize: 13,
-                   fontWeight: '600',
-                   color: colors.success,
-                 }}>
-                   💰 Save up to $600/year with annual billing
-                 </Text>
-               </View>
-             )}
-
-            {/* Compact Plan Cards */}
-            <View style={{ gap: 12 }}>
-              {presetPlans.map((plan, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={{
-                    backgroundColor: colors.card,
-                    borderRadius: 16,
-                    padding: 18,
-                    borderWidth: plan.isPopular ? 2 : 1,
-                    borderColor: plan.isPopular ? colors.primary : colors.borderLight,
-                    shadowColor: colors.shadow,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: plan.isPopular ? 0.1 : 0.04,
-                    shadowRadius: plan.isPopular ? 12 : 6,
-                    elevation: plan.isPopular ? 6 : 2,
-                    position: 'relative',
-                  }}
-                                     onPress={() => handleSubscribe(plan)}
-                  activeOpacity={0.7}
-                >
-                  {/* Popular Badge */}
-                  {plan.isPopular && (
-                    <View style={{
-                      position: 'absolute',
-                      top: -6,
-                      left: 18,
-                      backgroundColor: colors.primary,
-                      paddingHorizontal: 12,
-                      paddingVertical: 4,
-                      borderRadius: 12,
-                      shadowColor: colors.primary,
+            {/* Plans */}
+            <View style={{ gap: 16 }}>
+              {presetPlans.map((plan, index) => {
+                const pricing = isAnnual ? plan.yearly : plan.monthly;
+                
+                return (
+                  <View 
+                    key={index}
+                    style={{
+                      backgroundColor: colors.card,
+                      borderRadius: 16,
+                      padding: 20,
+                      borderWidth: plan.isPopular ? 2 : 1,
+                      borderColor: plan.isPopular ? colors.primary : colors.borderLight,
+                      shadowColor: colors.shadow,
                       shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.3,
-                      shadowRadius: 4,
-                      elevation: 4,
-                    }}>
-                      <Text style={{
-                        fontSize: 11,
-                        fontWeight: '700',
-                        color: colors.textInverse,
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
+                      shadowOpacity: plan.isPopular ? 0.12 : 0.06,
+                      shadowRadius: 8,
+                      elevation: plan.isPopular ? 6 : 3,
+                    }}
+                  >
+                    {plan.isPopular && (
+                      <View style={{
+                        position: 'absolute',
+                        top: -10,
+                        left: 20,
+                        backgroundColor: colors.primary,
+                        paddingHorizontal: 12,
+                        paddingVertical: 4,
+                        borderRadius: 8,
                       }}>
-                        Most Popular
-                      </Text>
-                    </View>
-                  )}
-
-                  <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                    {/* Icon */}
-                                         <View style={{
-                       width: 44,
-                       height: 44,
-                       borderRadius: 12,
-                       backgroundColor: plan.isPopular ? colors.primary + '20' : colors.surface,
-                       alignItems: 'center',
-                       justifyContent: 'center',
-                       marginRight: 16,
-                     }}>
-                       {plan.icon === 'zap' ? (
-                         <Zap size={20} color={plan.isPopular ? colors.primary : colors.textSecondary} />
-                       ) : plan.icon === 'crown' ? (
-                         <CreditCard size={20} color={plan.isPopular ? colors.primary : colors.textSecondary} />
-                       ) : (
-                         <Star size={20} color={plan.isPopular ? colors.primary : colors.textSecondary} />
-                       )}
-                     </View>
-
-                    {/* Content */}
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{
-                            fontSize: 18,
-                            fontWeight: '700',
+                        <Text style={{
+                          fontSize: 12,
+                          fontWeight: '600',
+                          color: colors.textInverse,
+                        }}>
+                          Most Popular
+                        </Text>
+                      </View>
+                    )}
+                    
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                          {getPlanIcon(plan.icon)}
+                          <Text style={{ 
+                            fontSize: 20, 
+                            fontWeight: '700', 
                             color: colors.text,
-                            marginBottom: 2,
+                            marginLeft: 12
                           }}>
                             {plan.name}
                           </Text>
-                          <Text style={{
-                            fontSize: 13,
-                            color: colors.textSecondary,
-                            fontWeight: '500',
-                            marginBottom: 8,
+                        </View>
+                        
+                        <Text style={{ 
+                          fontSize: 14, 
+                          color: colors.textSecondary,
+                          marginBottom: 12,
+                          fontWeight: '500'
+                        }}>
+                          {plan.description}
+                        </Text>
+                        
+                        <View style={{ flexDirection: 'row', alignItems: 'baseline', marginBottom: 12 }}>
+                          <Text style={{ 
+                            fontSize: 24, 
+                            fontWeight: '800', 
+                            color: colors.text 
                           }}>
-                            {plan.description}
+                            ${pricing.price}
                           </Text>
-                                                     <Text style={{
-                             fontSize: 13,
-                             color: colors.textSecondary,
-                             fontWeight: '500',
-                           }}>
-                             {isAnnual ? plan.yearly.minutes : plan.monthly.minutes} conversation minutes
-                           </Text>
-                        </View>
-
-                        {/* Price */}
-                        <View style={{ alignItems: 'flex-end', marginLeft: 12 }}>
-                          <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                                                         <Text style={{
-                               fontSize: 24,
-                               fontWeight: '800',
-                               color: colors.text,
-                             }}>
-                               ${isAnnual ? plan.yearly.price : plan.monthly.price}
-                             </Text>
-                            <Text style={{
-                              fontSize: 14,
-                              color: colors.textTertiary,
-                              fontWeight: '500',
-                              marginLeft: 2,
-                            }}>
-                              /{isAnnual ? 'year' : 'month'}
-                            </Text>
-                          </View>
-                          
-                          {/* CTA */}
-                          <View style={{
-                            backgroundColor: plan.isPopular ? colors.primary : colors.surface,
-                            borderRadius: 8,
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            marginTop: 8,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            gap: 4,
+                          <Text style={{ 
+                            fontSize: 14, 
+                            color: colors.textSecondary,
+                            marginLeft: 4,
+                            fontWeight: '500'
                           }}>
-                            <Text style={{
-                              fontSize: 12,
-                              fontWeight: '600',
-                              color: plan.isPopular ? colors.textInverse : colors.text,
-                            }}>
-                              Subscribe
-                            </Text>
-                            <ExternalLink 
-                              size={11} 
-                              color={plan.isPopular ? colors.textInverse : colors.text} 
-                            />
-                          </View>
+                            /{isAnnual ? 'year' : 'month'}
+                          </Text>
+                                                     {isAnnual && plan.yearly.originalPrice && (
+                             <View style={{
+                               backgroundColor: colors.success + '20',
+                               paddingHorizontal: 8,
+                               paddingVertical: 2,
+                               borderRadius: 4,
+                               marginLeft: 12,
+                             }}>
+                               <Text style={{
+                                 fontSize: 11,
+                                 fontWeight: '600',
+                                 color: colors.success,
+                               }}>
+                                 Save ${plan.yearly.originalPrice - pricing.price}
+                               </Text>
+                             </View>
+                           )}
                         </View>
+                        
+                        <Text style={{ 
+                          fontSize: 14, 
+                          color: colors.textSecondary,
+                          fontWeight: '500'
+                        }}>
+                          {pricing.minutes} conversation minutes {isAnnual ? 'per year' : 'per month'}
+                        </Text>
                       </View>
+                      
+                      <TouchableOpacity
+                        style={{
+                          backgroundColor: plan.isPopular ? colors.primary : colors.surface,
+                          paddingHorizontal: 20,
+                          paddingVertical: 10,
+                          borderRadius: 8,
+                          borderWidth: plan.isPopular ? 0 : 1,
+                          borderColor: colors.border,
+                        }}
+                        onPress={() => handleSubscribe(plan)}
+                      >
+                        <Text style={{
+                          fontSize: 14,
+                          fontWeight: '600',
+                          color: plan.isPopular ? colors.textInverse : colors.text,
+                        }}>
+                          Choose Plan
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Additional Info */}
-            <View style={{
-              backgroundColor: colors.surface,
-              borderRadius: 12,
-              padding: 16,
-              marginTop: 20,
-              borderWidth: 1,
-              borderColor: colors.borderLight,
-            }}>
-              <Text style={{
-                fontSize: 13,
-                color: colors.textSecondary,
-                textAlign: 'center',
-                lineHeight: 18,
-                fontWeight: '500',
-              }}>
-                All plans include AI interviews, real-time feedback, progress tracking, and unlimited practice sessions. Cancel anytime.
-              </Text>
+                );
+              })}
             </View>
           </View>
         </ScrollView>
@@ -1099,22 +1080,59 @@ export default function SettingsScreen() {
 
     return (
       <>
-        <View style={[styles.header, { backgroundColor: colors.background }]}>
-          <TouchableOpacity
+        {/* Updated Header with modern back button */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          marginBottom: 24, 
+          paddingHorizontal: spacing.lg,
+          paddingTop: 12
+        }}>
+          <TouchableOpacity 
             onPress={() => setCurrentView('main')}
-            style={styles.backButton}
+            style={{ 
+              marginRight: 12,
+              backgroundColor: colors.surface,
+              padding: 10,
+              borderRadius: 10,
+              shadowColor: colors.shadow,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.08,
+              shadowRadius: 3,
+              elevation: 3,
+              borderWidth: 1,
+              borderColor: colors.borderLight,
+            }}
           >
-            <ArrowLeft size={24} color={colors.text} />
+            <ArrowLeft size={18} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>Help & FAQ</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ 
+              fontSize: 24, 
+              fontWeight: '800', 
+              color: colors.text,
+              letterSpacing: -0.5,
+              marginBottom: 2
+            }}>
+              Help & FAQ
+            </Text>
+            <Text style={{ 
+              fontSize: 14, 
+              color: colors.textSecondary,
+              fontWeight: '500'
+            }}>
+              Find answers to common questions
+            </Text>
+          </View>
         </View>
 
-        <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
+        <View style={{ paddingBottom: spacing.xl }}>
           <Text style={{ 
-            fontSize: 16, 
+            fontSize: typography.bodyLarge, 
             color: colors.textSecondary, 
-            marginBottom: 24,
-            lineHeight: 22
+            marginBottom: spacing.lg,
+            lineHeight: typography.bodyLarge * 1.4,
+            fontWeight: '500',
           }}>
             Find answers to commonly asked questions about our AI interview platform.
           </Text>
@@ -1224,22 +1242,59 @@ export default function SettingsScreen() {
 
     return (
       <>
-        <View style={[styles.header, { backgroundColor: colors.background }]}>
-          <TouchableOpacity
+        {/* Updated Header with modern back button */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          marginBottom: 24, 
+          paddingHorizontal: spacing.lg,
+          paddingTop: 12
+        }}>
+          <TouchableOpacity 
             onPress={() => setCurrentView('main')}
-            style={styles.backButton}
+            style={{ 
+              marginRight: 12,
+              backgroundColor: colors.surface,
+              padding: 10,
+              borderRadius: 10,
+              shadowColor: colors.shadow,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.08,
+              shadowRadius: 3,
+              elevation: 3,
+              borderWidth: 1,
+              borderColor: colors.borderLight,
+            }}
           >
-            <ArrowLeft size={24} color={colors.text} />
+            <ArrowLeft size={18} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>Contact Support</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ 
+              fontSize: 24, 
+              fontWeight: '800', 
+              color: colors.text,
+              letterSpacing: -0.5,
+              marginBottom: 2
+            }}>
+              Contact Support
+            </Text>
+            <Text style={{ 
+              fontSize: 14, 
+              color: colors.textSecondary,
+              fontWeight: '500'
+            }}>
+              Get help and connect with us
+            </Text>
+          </View>
         </View>
 
-        <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
+        <View style={{ paddingBottom: spacing.xl }}>
           <Text style={{ 
-            fontSize: 16, 
+            fontSize: typography.bodyLarge, 
             color: colors.textSecondary, 
-            marginBottom: 32,
-            lineHeight: 22,
+            marginBottom: spacing.xl,
+            lineHeight: typography.bodyLarge * 1.4,
+            fontWeight: '500',
             textAlign: 'center'
           }}>
             Meet the Creator of InterviewAI
@@ -1304,7 +1359,7 @@ export default function SettingsScreen() {
               lineHeight: 20,
               marginBottom: 20
             }}>
-                             Tabrez is a Software Engineer with 5 years of experience in full-stack development, Generative AI, and cloud-native solutions. He&apos;s worked with startups and enterprises, building scalable apps using JavaScript, Python, Node.js, FastAPI, React, Next.js, and more. Tabrez is passionate about Machine Learning, Generative AI, Cloud Automation, and delivering real impactful results fast.
+              Tabrez is a Software Engineer with 5 years of experience in full-stack development, Generative AI, and cloud-native solutions. He&apos;s worked with startups and enterprises, building scalable apps using JavaScript, Python, Node.js, FastAPI, React, Next.js, and more. Tabrez is passionate about Machine Learning, Generative AI, Cloud Automation, and delivering real impactful results fast.
             </Text>
 
             {/* Skills */}
@@ -1383,13 +1438,13 @@ export default function SettingsScreen() {
                   backgroundColor: colors.card,
                   borderRadius: 12,
                   padding: 16,
+                  marginBottom: 12,
                   flexDirection: 'row',
                   alignItems: 'center',
-                  marginBottom: 12,
                   shadowColor: colors.shadow,
-                  shadowOffset: { width: 0, height: 1 },
+                  shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.05,
-                  shadowRadius: 4,
+                  shadowRadius: 8,
                   elevation: 2,
                   borderWidth: 1,
                   borderColor: colors.borderLight,
@@ -1397,10 +1452,10 @@ export default function SettingsScreen() {
                 onPress={() => handleLinkPress(link.url)}
               >
                 <View style={{
-                  backgroundColor: colors.surface,
                   width: 40,
                   height: 40,
-                  borderRadius: 20,
+                  borderRadius: 10,
+                  backgroundColor: colors.primary + '15',
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginRight: 16,
@@ -1411,8 +1466,8 @@ export default function SettingsScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={{ 
                     fontSize: 16, 
-                    color: colors.text, 
-                    fontWeight: '600',
+                    fontWeight: '600', 
+                    color: colors.text,
                     marginBottom: 2
                   }}>
                     {link.name}
@@ -1426,37 +1481,9 @@ export default function SettingsScreen() {
                   </Text>
                 </View>
                 
-                <ExternalLink size={20} color={colors.textTertiary} />
+                <ChevronRight size={20} color={colors.textTertiary} />
               </TouchableOpacity>
             ))}
-          </View>
-
-          {/* Support Note */}
-          <View style={{
-            backgroundColor: colors.primary + '10',
-            borderRadius: 12,
-            padding: 20,
-            marginTop: 24,
-            borderWidth: 1,
-            borderColor: colors.primary + '20',
-          }}>
-            <Text style={{ 
-              fontSize: 16, 
-              fontWeight: '600', 
-              color: colors.primary,
-              marginBottom: 8,
-              textAlign: 'center'
-            }}>
-              Need Help?
-            </Text>
-            <Text style={{ 
-              fontSize: 14, 
-              color: colors.textSecondary,
-              lineHeight: 20,
-              textAlign: 'center'
-            }}>
-              Feel free to reach out for technical support, feature requests, or feedback about InterviewAI. Tabrez personally responds to all inquiries.
-            </Text>
           </View>
         </View>
       </>
@@ -1464,30 +1491,38 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView 
-        style={{ flex: 1, backgroundColor: colors.background }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      >
-        {(() => {
-          console.log('[Settings] Current view:', currentView);
-          if (currentView === 'main') {
-            console.log('[Settings] Rendering main settings with sign out button');
-            return renderMainSettings();
-          } else if (currentView === 'billing') {
-            console.log('[Settings] Rendering billing view');
-            return renderBillingPlans();
-          } else if (currentView === 'faq') {
-            console.log('[Settings] Rendering FAQ view');
-            return renderFAQ();
-          } else {
-            console.log('[Settings] Rendering contact support view');
-            return renderContactSupport();
-          }
-        })()}
-      </ScrollView>
-    </SafeAreaView>
+    <LinearGradient colors={gradientColors as any} style={{ flex: 1 }}>
+      <View style={{ 
+        flex: 1, 
+        paddingTop: Math.max(insets.top + spacing.lg, spacing.xxl) 
+      }}>
+        <ScrollView 
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingBottom: insets.bottom + spacing.xxl,
+            paddingHorizontal: spacing.lg,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          {(() => {
+            console.log('[Settings] Current view:', currentView);
+            if (currentView === 'main') {
+              console.log('[Settings] Rendering main settings with sign out button');
+              return renderMainSettings();
+            } else if (currentView === 'billing') {
+              console.log('[Settings] Rendering billing view');
+              return renderBillingPlans();
+            } else if (currentView === 'faq') {
+              console.log('[Settings] Rendering FAQ view');
+              return renderFAQ();
+            } else {
+              console.log('[Settings] Rendering contact support view');
+              return renderContactSupport();
+            }
+          })()}
+        </ScrollView>
+      </View>
+    </LinearGradient>
   );
 }
 

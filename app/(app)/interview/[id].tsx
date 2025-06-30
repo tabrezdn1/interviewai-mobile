@@ -1,9 +1,10 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
     Clock,
     Mic, MicOff,
     MoreVertical,
-    Phone, PhoneOff,
+    PhoneOff,
     Users,
     Video, VideoOff
 } from 'lucide-react-native';
@@ -30,6 +31,21 @@ const InterviewSession: React.FC = () => {
   const [totalQuestions] = useState(5);
   
   const intervalRef = useRef<any>(null);
+
+  // Add colors and gradient configuration
+  const colors = {
+    background: '#f8fafc',
+    text: '#1f2937',
+    textSecondary: '#6b7280',
+    primary: '#3b82f6',
+    surface: '#ffffff',
+    textInverse: '#ffffff',
+    gradientBackground: null
+  };
+
+  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
+    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
+    : ['#0f172a', '#1e293b', '#334155'] as const);
 
   // Mock AI interviewer responses
   const mockQuestions = [
@@ -135,208 +151,193 @@ const InterviewSession: React.FC = () => {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
-      <StatusBar barStyle="light-content" />
-      
-      {/* Video Area */}
-      <View style={{ flex: 1, position: 'relative' }}>
-        {/* AI Interviewer Video (Mock) */}
-        <View style={{
-          flex: 1,
-          backgroundColor: '#1a1a1a',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          <Users size={80} color="#6b7280" />
-          <Text style={{ color: 'white', fontSize: 18, fontWeight: '600', marginTop: 16 }}>
-            AI Interviewer
-          </Text>
-          <Text style={{ color: '#9ca3af', fontSize: 14, marginTop: 4 }}>
-            {sessionStarted ? 'Listening...' : 'Waiting to start'}
-          </Text>
-        </View>
-
-        {/* User Video (Mock) */}
-        <View style={{
-          position: 'absolute',
-          top: 60,
-          right: 20,
-          width: 120,
-          height: 160,
-          backgroundColor: '#2d2d2d',
-          borderRadius: 12,
-          borderWidth: 2,
-          borderColor: isVideoOn ? '#22c55e' : '#ef4444',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          {isVideoOn ? (
-            <>
-              <Video size={32} color="white" />
-              <Text style={{ color: 'white', fontSize: 12, marginTop: 8 }}>You</Text>
-            </>
-          ) : (
-            <>
-              <VideoOff size={32} color="#9ca3af" />
-              <Text style={{ color: '#9ca3af', fontSize: 12, marginTop: 8 }}>Video Off</Text>
-            </>
-          )}
-        </View>
-
-        {/* Session Info */}
-        <View style={{
-          position: 'absolute',
-          top: 60,
-          left: 20,
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          padding: 12,
-          borderRadius: 8
-        }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-            <Clock size={16} color="white" />
-            <Text style={{ color: 'white', fontSize: 14, marginLeft: 8 }}>
-              {formatTime(elapsedTime)}
+    <LinearGradient colors={gradientColors as any} style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+        <StatusBar barStyle="light-content" />
+        
+        {/* Video Area */}
+        <View style={{ flex: 1, position: 'relative' }}>
+          {/* AI Interviewer Video (Mock) */}
+          <View style={{
+            flex: 1,
+            backgroundColor: 'rgba(26, 26, 26, 0.8)',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <Users size={80} color="#6b7280" />
+            <Text style={{ color: 'white', fontSize: 18, fontWeight: '600', marginTop: 16 }}>
+              AI Interviewer
+            </Text>
+            <Text style={{ color: '#9ca3af', fontSize: 14, marginTop: 4 }}>
+              {sessionStarted ? 'Listening...' : 'Waiting to start'}
             </Text>
           </View>
-          <Text style={{ color: '#9ca3af', fontSize: 12 }}>
-            Question {questionNumber} of {totalQuestions}
+
+          {/* User Video (Mock) */}
+          <View style={{
+            position: 'absolute',
+            top: 60,
+            right: 20,
+            width: 120,
+            height: 160,
+            backgroundColor: '#2d2d2d',
+            borderRadius: 12,
+            borderWidth: 2,
+            borderColor: isVideoOn ? '#22c55e' : '#ef4444',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            {isVideoOn ? (
+              <>
+                <Video size={32} color="white" />
+                <Text style={{ color: 'white', fontSize: 12, marginTop: 8 }}>You</Text>
+              </>
+            ) : (
+              <>
+                <VideoOff size={32} color="#9ca3af" />
+                <Text style={{ color: '#9ca3af', fontSize: 12, marginTop: 8 }}>Video Off</Text>
+              </>
+            )}
+          </View>
+
+          {/* Session Info */}
+          <View style={{
+            position: 'absolute',
+            top: 60,
+            left: 20,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            padding: 12,
+            borderRadius: 8
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <Clock size={16} color="white" />
+              <Text style={{ color: 'white', fontSize: 14, marginLeft: 8 }}>
+                {formatTime(elapsedTime)}
+              </Text>
+            </View>
+            <Text style={{ color: '#9ca3af', fontSize: 12 }}>
+              Question {questionNumber} of {totalQuestions}
+            </Text>
+          </View>
+        </View>
+
+        {/* Question Display */}
+        <View style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          padding: 20,
+          margin: 20,
+          borderRadius: 16,
+          marginTop: 'auto',
+          marginBottom: 140
+        }}>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: '600', 
+            color: colors.text,
+            textAlign: 'center',
+            lineHeight: 24
+          }}>
+            {currentQuestion}
           </Text>
         </View>
-      </View>
 
-      {/* Question Display */}
-      <View style={{
-        backgroundColor: '#1a1a1a',
-        padding: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#333'
-      }}>
-        <Text style={{ color: '#9ca3af', fontSize: 14, marginBottom: 8 }}>
-          Current Question:
-        </Text>
-        <Text style={{ color: 'white', fontSize: 16, lineHeight: 24, marginBottom: 16 }}>
-          {currentQuestion}
-        </Text>
-        
-        {sessionStarted && (
-          <TouchableOpacity
+        {/* Bottom Controls */}
+        <View style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          paddingVertical: 24,
+          paddingHorizontal: 20,
+          paddingBottom: 40,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          {/* Video Toggle */}
+          <TouchableOpacity 
+            onPress={toggleVideo}
             style={{
-              backgroundColor: '#007AFF',
-              paddingVertical: 12,
-              paddingHorizontal: 24,
-              borderRadius: 8,
-              alignSelf: 'flex-end'
+              backgroundColor: isVideoOn ? '#22c55e' : '#ef4444',
+              padding: 16,
+              borderRadius: 50,
+              marginHorizontal: 8
             }}
-            onPress={nextQuestion}
           >
-            <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
-              {questionNumber < totalQuestions ? 'Next Question' : 'Finish Interview'}
+            {isVideoOn ? <Video size={24} color="white" /> : <VideoOff size={24} color="white" />}
+          </TouchableOpacity>
+
+          {/* Audio Toggle */}
+          <TouchableOpacity 
+            onPress={toggleAudio}
+            style={{
+              backgroundColor: isAudioOn ? '#22c55e' : '#ef4444',
+              padding: 16,
+              borderRadius: 50,
+              marginHorizontal: 8
+            }}
+          >
+            {isAudioOn ? <Mic size={24} color="white" /> : <MicOff size={24} color="white" />}
+          </TouchableOpacity>
+
+          {/* Start/Next Button */}
+          <TouchableOpacity 
+            onPress={sessionStarted ? nextQuestion : startSession}
+            style={{
+              backgroundColor: colors.primary,
+              paddingHorizontal: 24,
+              paddingVertical: 16,
+              borderRadius: 25,
+              marginHorizontal: 8,
+              minWidth: 120
+            }}
+          >
+            <Text style={{ 
+              color: 'white', 
+              fontSize: 16, 
+              fontWeight: '600',
+              textAlign: 'center'
+            }}>
+              {sessionStarted ? 'Next' : 'Start'}
             </Text>
           </TouchableOpacity>
-        )}
-      </View>
 
-      {/* Controls */}
-      <View style={{
-        backgroundColor: '#1a1a1a',
-        padding: 20,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 20
-      }}>
-        <TouchableOpacity
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: isAudioOn ? '#374151' : '#ef4444',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-          onPress={toggleAudio}
-        >
-          {isAudioOn ? (
-            <Mic size={24} color="white" />
-          ) : (
-            <MicOff size={24} color="white" />
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: isVideoOn ? '#374151' : '#ef4444',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-          onPress={toggleVideo}
-        >
-          {isVideoOn ? (
-            <Video size={24} color="white" />
-          ) : (
-            <VideoOff size={24} color="white" />
-          )}
-        </TouchableOpacity>
-
-        {!sessionStarted ? (
-          <TouchableOpacity
-            style={{
-              width: 80,
-              height: 60,
-              borderRadius: 30,
-              backgroundColor: '#22c55e',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-            onPress={startSession}
-          >
-            <Phone size={24} color="white" />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={{
-              width: 80,
-              height: 60,
-              borderRadius: 30,
-              backgroundColor: '#ef4444',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
+          {/* End Call */}
+          <TouchableOpacity 
             onPress={endSession}
+            style={{
+              backgroundColor: '#ef4444',
+              padding: 16,
+              borderRadius: 50,
+              marginHorizontal: 8
+            }}
           >
             <PhoneOff size={24} color="white" />
           </TouchableOpacity>
-        )}
 
-        <TouchableOpacity
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: '#374151',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-          onPress={() => {
-            // Settings menu
-            Alert.alert('Settings', 'Interview settings and options coming soon!');
-          }}
-        >
-          <MoreVertical size={24} color="white" />
-        </TouchableOpacity>
+          {/* More Options */}
+          <TouchableOpacity 
+            style={{
+              backgroundColor: '#374151',
+              padding: 16,
+              borderRadius: 50,
+              marginHorizontal: 8
+            }}
+          >
+            <MoreVertical size={24} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 
 // Helper function to format elapsed time
 function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
 export default InterviewSession; 

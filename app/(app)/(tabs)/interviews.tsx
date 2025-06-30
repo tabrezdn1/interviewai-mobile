@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import {
     Calendar,
@@ -41,6 +42,10 @@ const InterviewsScreen: React.FC = () => {
   const [showDateModal, setShowDateModal] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
+    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
+    : ['#0f172a', '#1e293b', '#334155'] as const);
 
   // Generate date options (next 30 days)
   const generateDateOptions = () => {
@@ -1047,35 +1052,33 @@ const InterviewsScreen: React.FC = () => {
   }
 
   return (
-    <>
-      <ScrollView 
-        style={{ flex: 1, backgroundColor: colors.background }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={onRefresh}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
-          />
-        }
-      >
+    <LinearGradient colors={gradientColors as any} style={{ flex: 1 }}>
+      <View style={{ flex: 1, paddingTop: 32 }}>
         {renderHeader()}
-
-        {/* Interviews List */}
-        {interviews.length === 0 ? (
-          renderEmptyState()
-        ) : (
-          <View>
-            {interviews.map(renderInterviewCard)}
-          </View>
-        )}
-      </ScrollView>
-
-      {renderEditModal()}
-      {renderDeleteModal()}
-    </>
+        
+        <ScrollView 
+          style={{ flex: 1 }}
+          contentContainerStyle={{ 
+            paddingHorizontal: 24,
+            paddingBottom: 100,
+            flexGrow: 1
+          }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {interviews.length === 0 ? renderEmptyState() : (
+            <View style={{ gap: 16 }}>
+              {interviews.map(renderInterviewCard)}
+            </View>
+          )}
+        </ScrollView>
+        
+        {renderEditModal()}
+        {renderDeleteModal()}
+      </View>
+    </LinearGradient>
   );
 };
 

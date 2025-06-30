@@ -6,21 +6,25 @@ import React, { useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
-    Dimensions,
     Image,
     KeyboardAvoidingView,
     Platform,
-    ScrollView,
-    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../src/store/authStore';
-import { useThemeColors } from '../../src/store/themeStore';
-
-const { width, height } = Dimensions.get('window');
+import { createGradient, getElevation, useThemeColors, useThemeStore } from '../../src/store/themeStore';
+import {
+    borderRadius,
+    grid,
+    spacing,
+    touchTarget,
+    typography,
+    wp
+} from '../../src/utils/responsive';
 
 const SignUp = () => {
   const [name, setName] = useState('');
@@ -29,13 +33,12 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  const { signUp, signInWithOAuth } = useAuthStore();
+  const { signUp } = useAuthStore();
   const colors = useThemeColors();
+  const { theme } = useThemeStore();
+  const insets = useSafeAreaInsets();
 
-  // Get gradient colors from theme or fallback
-  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
-    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
-    : ['#0f172a', '#1e293b', '#334155'] as const);
+  const gradient = createGradient(theme, 'background');
 
   const handleEmailSignUp = async () => {
     if (!name || !email || !password) {
@@ -63,287 +66,122 @@ const SignUp = () => {
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
-    setLoading(true);
-    try {
-      await signInWithOAuth(provider);
-    } catch (error: any) {
-      Alert.alert('Sign Up Failed', error.message || 'Please try again');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleClose = () => {
     router.push('/(auth)/welcome');
   };
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    keyboardView: {
-      flex: 1,
-    },
-    scrollContent: {
-      flexGrow: 1,
-      justifyContent: 'center',
-      padding: 20,
-      minHeight: height * 0.85,
-    },
-    glassContainer: {
-      position: 'relative',
-      alignItems: 'center',
-    },
-    card: {
-      position: 'relative',
-      width: '100%',
-      maxWidth: 400,
-      backgroundColor: colors.card,
-      borderRadius: 20,
-      padding: 24,
-      shadowColor: colors.shadow,
-      shadowOffset: {
-        width: 0,
-        height: 12,
-      },
-      shadowOpacity: 0.15,
-      shadowRadius: 20,
-      elevation: 15,
-      borderWidth: 1,
-      borderColor: colors.borderLight,
-    },
-    closeButton: {
-      position: 'absolute',
-      top: 8,
-      right: 8,
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: colors.surface,
-      alignItems: 'center',
-      justifyContent: 'center',
-      shadowColor: colors.shadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-      borderWidth: 1,
-      borderColor: colors.borderLight,
-    },
-    header: {
-      alignItems: 'center',
-      marginBottom: 24,
-      marginTop: 8,
-    },
-    logo: {
-      width: 60,
-      height: 60,
-      marginBottom: 16,
-      shadowColor: colors.primary,
-      shadowOffset: {
-        width: 0,
-        height: 3,
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 6,
-    },
-    title: {
-      fontSize: 28,
-      fontWeight: '800',
-      color: colors.text,
-      marginBottom: 6,
-      textAlign: 'center',
-      letterSpacing: -0.3,
-    },
-    subtitle: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      lineHeight: 20,
-      fontWeight: '500',
-    },
-    form: {
-      gap: 16,
-    },
-    inputContainer: {
-      gap: 6,
-    },
-    inputLabel: {
-      fontSize: 15,
-      fontWeight: '600',
-      color: colors.text,
-    },
-    input: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-      fontSize: 16,
-      color: colors.text,
-      shadowColor: colors.shadow,
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      shadowOpacity: 0.03,
-      shadowRadius: 2,
-      elevation: 1,
-    },
-    passwordContainer: {
-      position: 'relative',
-    },
-    passwordInput: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-      paddingRight: 45,
-      fontSize: 16,
-      color: colors.text,
-      shadowColor: colors.shadow,
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      shadowOpacity: 0.03,
-      shadowRadius: 2,
-      elevation: 1,
-    },
-    passwordToggle: {
-      position: 'absolute',
-      right: 14,
-      top: 14,
-    },
-    primaryButton: {
-      backgroundColor: colors.primary,
-      borderRadius: 12,
-      paddingVertical: 14,
-      alignItems: 'center',
-      justifyContent: 'center',
-      shadowColor: colors.primary,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 0.2,
-      shadowRadius: 8,
-      elevation: 6,
-      marginTop: 8,
-    },
-    disabledButton: {
-      opacity: 0.7,
-    },
-    primaryButtonText: {
-      color: colors.textInverse,
-      fontSize: 16,
-      fontWeight: '700',
-    },
-    divider: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginVertical: 20,
-      gap: 12,
-    },
-    dividerLine: {
-      flex: 1,
-      height: 1,
-      backgroundColor: colors.border,
-    },
-    dividerText: {
-      fontSize: 13,
-      color: colors.textTertiary,
-      fontWeight: '500',
-    },
-    oauthContainer: {
-      gap: 10,
-    },
-    oauthButton: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 10,
-      shadowColor: colors.shadow,
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      shadowOpacity: 0.03,
-      shadowRadius: 2,
-      elevation: 1,
-    },
-    oauthButtonText: {
-      fontSize: 15,
-      fontWeight: '600',
-      color: colors.text,
-    },
-    footer: {
-      marginTop: 24,
-      alignItems: 'center',
-    },
-    footerText: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      textAlign: 'center',
-    },
-    footerLink: {
-      color: colors.primary,
-      fontWeight: '600',
-    },
-  });
-
   return (
     <LinearGradient
-      colors={gradientColors}
-      style={styles.container}
+      colors={gradient.colors as any}
+      start={gradient.start}
+      end={gradient.end}
+      style={{ flex: 1 }}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+        style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Glassmorphism Background */}
-          <View style={styles.glassContainer}>
-            <View style={styles.card}>
-              {/* Close Button - Inside the card */}
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          paddingTop: Math.max(insets.top + spacing.lg, spacing.xl),
+          paddingBottom: Math.max(insets.bottom + spacing.lg, spacing.xl),
+          paddingHorizontal: grid.container,
+        }}>
+          <View style={{
+            alignItems: 'center',
+          }}>
+            <View style={{
+              width: '100%',
+              maxWidth: wp(90),
+              backgroundColor: colors.card,
+              borderRadius: borderRadius.xxl,
+              padding: spacing.lg,
+              ...getElevation(3, theme),
+              borderWidth: 1,
+              borderColor: colors.borderLight,
+              position: 'relative',
+            }}>
+              {/* Close Button */}
               <TouchableOpacity 
-                style={styles.closeButton}
+                style={{
+                  position: 'absolute',
+                  top: spacing.sm,
+                  right: spacing.sm,
+                  width: touchTarget.small,
+                  height: touchTarget.small,
+                  borderRadius: touchTarget.small / 2,
+                  backgroundColor: colors.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...getElevation(1, theme),
+                  borderWidth: 1,
+                  borderColor: colors.borderLight,
+                  zIndex: 10,
+                }}
                 onPress={handleClose}
               >
-                <X size={18} color={colors.textSecondary} />
+                <X size={16} color={colors.textSecondary} />
               </TouchableOpacity>
 
               {/* Header */}
-              <View style={styles.header}>
+              <View style={{
+                alignItems: 'center',
+                marginBottom: spacing.lg,
+                marginTop: spacing.sm,
+              }}>
                 <Image 
                   source={require('../../assets/images/interviewai-logo.png')}
-                  style={styles.logo}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    marginBottom: spacing.md,
+                  }}
                   resizeMode="contain"
                 />
-                <Text style={styles.title}>Create your account</Text>
-                <Text style={styles.subtitle}>Sign up to start practicing interviews with AI</Text>
+                <Text style={{
+                  fontSize: typography.titleLarge,
+                  fontWeight: '800',
+                  color: colors.text,
+                  marginBottom: spacing.xs,
+                  textAlign: 'center',
+                  letterSpacing: -0.3,
+                }}>
+                  Create your account
+                </Text>
+                <Text style={{
+                  fontSize: typography.body,
+                  color: colors.textSecondary,
+                  textAlign: 'center',
+                  lineHeight: typography.body * 1.4,
+                  fontWeight: '500',
+                }}>
+                  Sign up to start practicing interviews with AI
+                </Text>
               </View>
 
               {/* Form */}
-              <View style={styles.form}>
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Full Name</Text>
+              <View style={{ gap: spacing.md }}>
+                <View style={{ gap: spacing.xs }}>
+                  <Text style={{
+                    fontSize: typography.body,
+                    fontWeight: '600',
+                    color: colors.text,
+                  }}>
+                    Full Name
+                  </Text>
                   <TextInput
-                    style={styles.input}
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      borderRadius: borderRadius.lg,
+                      paddingHorizontal: spacing.md,
+                      paddingVertical: spacing.sm,
+                      fontSize: typography.body,
+                      color: colors.text,
+                      ...getElevation(1, theme),
+                    }}
                     placeholder="Enter your full name"
                     placeholderTextColor={colors.placeholder}
                     value={name}
@@ -353,10 +191,26 @@ const SignUp = () => {
                   />
                 </View>
 
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Email</Text>
+                <View style={{ gap: spacing.xs }}>
+                  <Text style={{
+                    fontSize: typography.body,
+                    fontWeight: '600',
+                    color: colors.text,
+                  }}>
+                    Email
+                  </Text>
                   <TextInput
-                    style={styles.input}
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      borderRadius: borderRadius.lg,
+                      paddingHorizontal: spacing.md,
+                      paddingVertical: spacing.sm,
+                      fontSize: typography.body,
+                      color: colors.text,
+                      ...getElevation(1, theme),
+                    }}
                     placeholder="Enter your email"
                     placeholderTextColor={colors.placeholder}
                     value={email}
@@ -367,11 +221,28 @@ const SignUp = () => {
                   />
                 </View>
 
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Password</Text>
-                  <View style={styles.passwordContainer}>
+                <View style={{ gap: spacing.xs }}>
+                  <Text style={{
+                    fontSize: typography.body,
+                    fontWeight: '600',
+                    color: colors.text,
+                  }}>
+                    Password
+                  </Text>
+                  <View style={{ position: 'relative' }}>
                     <TextInput
-                      style={styles.passwordInput}
+                      style={{
+                        backgroundColor: colors.surface,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        borderRadius: borderRadius.lg,
+                        paddingHorizontal: spacing.md,
+                        paddingVertical: spacing.sm,
+                        paddingRight: touchTarget.medium + spacing.lg,
+                        fontSize: typography.body,
+                        color: colors.text,
+                        ...getElevation(1, theme),
+                      }}
                       placeholder="Enter your password (min. 6 characters)"
                       placeholderTextColor={colors.placeholder}
                       value={password}
@@ -381,7 +252,16 @@ const SignUp = () => {
                       autoCorrect={false}
                     />
                     <TouchableOpacity
-                      style={styles.passwordToggle}
+                      style={{
+                        position: 'absolute',
+                        right: spacing.md,
+                        top: 0,
+                        bottom: 0,
+                        width: touchTarget.medium,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: borderRadius.sm,
+                      }}
                       onPress={() => setShowPassword(!showPassword)}
                     >
                       <Ionicons
@@ -394,52 +274,49 @@ const SignUp = () => {
                 </View>
 
                 <TouchableOpacity
-                  style={[styles.primaryButton, loading && styles.disabledButton]}
+                  style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: borderRadius.lg,
+                    paddingVertical: spacing.md,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginTop: spacing.sm,
+                    ...getElevation(2, theme),
+                    opacity: loading ? 0.7 : 1,
+                  }}
                   onPress={handleEmailSignUp}
                   disabled={loading}
                 >
                   {loading ? (
                     <ActivityIndicator color={colors.textInverse} />
                   ) : (
-                    <Text style={styles.primaryButtonText}>Create Account</Text>
+                    <Text style={{
+                      color: colors.textInverse,
+                      fontSize: typography.body,
+                      fontWeight: '700',
+                    }}>
+                      Create Account
+                    </Text>
                   )}
                 </TouchableOpacity>
-
-                {/* Divider */}
-                <View style={styles.divider}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>Or continue with</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-
-                {/* OAuth Buttons */}
-                <View style={styles.oauthContainer}>
-                  <TouchableOpacity
-                    style={styles.oauthButton}
-                    onPress={() => handleOAuthSignIn('google')}
-                    disabled={loading}
-                  >
-                    <Ionicons name="logo-google" size={18} color="#EA4335" />
-                    <Text style={styles.oauthButtonText}>Continue with Google</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.oauthButton}
-                    onPress={() => handleOAuthSignIn('github')}
-                    disabled={loading}
-                  >
-                    <Ionicons name="logo-github" size={18} color={colors.text} />
-                    <Text style={styles.oauthButtonText}>Continue with GitHub</Text>
-                  </TouchableOpacity>
-                </View>
               </View>
 
               {/* Footer */}
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>
+              <View style={{
+                marginTop: spacing.lg,
+                alignItems: 'center',
+              }}>
+                <Text style={{
+                  fontSize: typography.body,
+                  color: colors.textSecondary,
+                  textAlign: 'center',
+                }}>
                   Already have an account?{' '}
                   <Text
-                    style={styles.footerLink}
+                    style={{
+                      color: colors.primary,
+                      fontWeight: '600',
+                    }}
                     onPress={() => router.push('/(auth)/signin')}
                   >
                     Sign in
@@ -448,7 +325,7 @@ const SignUp = () => {
               </View>
             </View>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </LinearGradient>
   );

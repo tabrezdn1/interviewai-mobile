@@ -1,24 +1,27 @@
 {
   "expo": {
     "name": "InterviewAI Mobile",
-    "slug": "interviewai-mobile",
+    "slug": "interviewai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/interviewai-logo.png",
     "scheme": "interviewai",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/interviewai-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.interviewai.mobile"
+      "bundleIdentifier": "com.interviewai.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/interviewai-logo.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.interviewai.mobile"
@@ -33,6 +36,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b71a3cd7-0788-4758-ada2-642c0ea25808"
+      }
+    },
+    "owner": "tabrezdn1"
   }
 }
