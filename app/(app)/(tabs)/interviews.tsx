@@ -1,10 +1,9 @@
 import { useRouter } from 'expo-router';
 import {
     Calendar,
+    ChevronRight,
     Clock,
     Edit,
-    MapPin,
-    Save,
     Trash2,
     User,
     X
@@ -17,18 +16,19 @@ import {
     RefreshControl,
     ScrollView,
     Text,
-    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
 import { DatabaseService, Interview } from '../../../src/services/DatabaseService';
 import { InterviewService } from '../../../src/services/InterviewService';
 import { useAuthStore } from '../../../src/store/authStore';
-import { formatDate } from '../../../src/utils/helpers';
+import { useThemeColors } from '../../../src/store/themeStore';
 
 const InterviewsScreen: React.FC = () => {
   const router = useRouter();
   const { user } = useAuthStore();
+  const colors = useThemeColors();
+  
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -36,9 +36,35 @@ const InterviewsScreen: React.FC = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
-  const [editDate, setEditDate] = useState('');
-  const [editTime, setEditTime] = useState('');
+  const [editDateTime, setEditDateTime] = useState(new Date());
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [showTimeModal, setShowTimeModal] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Generate date options (next 30 days)
+  const generateDateOptions = () => {
+    const dates = [];
+    const today = new Date();
+    for (let i = 1; i <= 30; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  };
+
+  // Generate time options
+  const generateTimeOptions = () => {
+    const times = [];
+    for (let hour = 8; hour <= 18; hour++) {
+      for (let minute of [0, 30]) {
+        const time = new Date();
+        time.setHours(hour, minute, 0, 0);
+        times.push(time);
+      }
+    }
+    return times;
+  };
 
   const fetchInterviews = useCallback(async (showRefresh = false) => {
     if (!user?.id) return;
@@ -70,35 +96,43 @@ const InterviewsScreen: React.FC = () => {
   const handleEditInterview = (interview: Interview) => {
     setSelectedInterview(interview);
     
-    // Parse current scheduled date and time
+    // Set current scheduled date and time
     const scheduledDate = new Date(interview.scheduled_at || interview.created_at!);
-    const dateStr = scheduledDate.toISOString().split('T')[0];
-    const timeStr = scheduledDate.toTimeString().slice(0, 5);
-    
-    setEditDate(dateStr);
-    setEditTime(timeStr);
+    setEditDateTime(scheduledDate);
     setEditModalVisible(true);
   };
 
+  const handleDateSelect = (selectedDate: Date) => {
+    const newDateTime = new Date(editDateTime);
+    newDateTime.setFullYear(selectedDate.getFullYear());
+    newDateTime.setMonth(selectedDate.getMonth());
+    newDateTime.setDate(selectedDate.getDate());
+    setEditDateTime(newDateTime);
+    setShowDateModal(false);
+  };
+
+  const handleTimeSelect = (selectedTime: Date) => {
+    const newDateTime = new Date(editDateTime);
+    newDateTime.setHours(selectedTime.getHours());
+    newDateTime.setMinutes(selectedTime.getMinutes());
+    setEditDateTime(newDateTime);
+    setShowTimeModal(false);
+  };
+
   const handleSaveEdit = async () => {
-    if (!selectedInterview || !editDate || !editTime) {
-      Alert.alert('Error', 'Please select both date and time');
-      return;
-    }
+    if (!selectedInterview) return;
 
     setSaving(true);
     try {
-      const newScheduledAt = new Date(`${editDate}T${editTime}:00.000Z`).toISOString();
-      
       const success = await InterviewService.updateInterview(selectedInterview.id, {
-        scheduled_at: newScheduledAt
+        scheduled_at: editDateTime.toISOString()
       });
 
       if (success) {
         // Update local state
         setInterviews(prev => prev.map(interview => 
           interview.id === selectedInterview.id 
-            ? { ...interview, scheduled_at: newScheduledAt }
+            ? { ...interview, scheduled_at: editDateTime.toISOString() }
             : interview
         ));
         
@@ -150,28 +184,28 @@ const InterviewsScreen: React.FC = () => {
   const getInterviewTypeIcon = (type: string) => {
     switch (type?.toLowerCase()) {
       case 'technical':
-        return <User size={16} color="#3b82f6" />;
+        return <User size={16} color={colors.info} />;
       case 'behavioral':
-        return <User size={16} color="#10b981" />;
+        return <User size={16} color={colors.success} />;
       case 'mixed':
-        return <User size={16} color="#8b5cf6" />;
+        return <User size={16} color={colors.accent} />;
       default:
-        return <User size={16} color="#6b7280" />;
+        return <User size={16} color={colors.textSecondary} />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'scheduled':
-        return '#10b981';
+        return colors.success;
       case 'draft':
-        return '#f59e0b';
+        return colors.warning;
       case 'pending':
-        return '#3b82f6';
+        return colors.info;
       case 'ready':
-        return '#059669';
+        return colors.success;
       default:
-        return '#6b7280';
+        return colors.textSecondary;
     }
   };
 
@@ -190,6 +224,199 @@ const InterviewsScreen: React.FC = () => {
     }
   };
 
+  // Format date for scheduled interviews (show actual date, not relative)
+  const formatScheduledDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    // Check if it's today or tomorrow
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return 'Tomorrow';
+    } else {
+      // Show actual date for other days
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+  };
+
+  // Date Selection Modal
+  const renderDateModal = () => (
+    <Modal
+      visible={showDateModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowDateModal(false)}
+    >
+      <View style={{
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end'
+      }}>
+        <View style={{
+          backgroundColor: colors.background,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          paddingTop: 20,
+          paddingBottom: 40,
+          paddingHorizontal: 20,
+          maxHeight: '70%'
+        }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 20,
+            paddingBottom: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border
+          }}>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '700',
+              color: colors.text
+            }}>
+              Select Date
+            </Text>
+            <TouchableOpacity onPress={() => setShowDateModal(false)}>
+              <X size={24} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={{ gap: 8 }}>
+              {generateDateOptions().map((date, index) => {
+                const isSelected = date.toDateString() === editDateTime.toDateString();
+                const isToday = date.toDateString() === new Date().toDateString();
+                const isTomorrow = date.toDateString() === new Date(Date.now() + 86400000).toDateString();
+                
+                let displayText = date.toLocaleDateString('en-US', { 
+                  weekday: 'long', 
+                  month: 'long', 
+                  day: 'numeric' 
+                });
+                
+                if (isToday) displayText = `Today, ${displayText}`;
+                if (isTomorrow) displayText = `Tomorrow, ${displayText}`;
+                
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={{
+                      backgroundColor: isSelected ? colors.primary + '20' : colors.card,
+                      padding: 16,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: isSelected ? colors.primary : colors.borderLight,
+                    }}
+                    onPress={() => handleDateSelect(date)}
+                  >
+                    <Text style={{
+                      fontSize: 16,
+                      fontWeight: '600',
+                      color: isSelected ? colors.primary : colors.text
+                    }}>
+                      {displayText}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // Time Selection Modal
+  const renderTimeModal = () => (
+    <Modal
+      visible={showTimeModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowTimeModal(false)}
+    >
+      <View style={{
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end'
+      }}>
+        <View style={{
+          backgroundColor: colors.background,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          paddingTop: 20,
+          paddingBottom: 40,
+          paddingHorizontal: 20,
+          maxHeight: '70%'
+        }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 20,
+            paddingBottom: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border
+          }}>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '700',
+              color: colors.text
+            }}>
+              Select Time
+            </Text>
+            <TouchableOpacity onPress={() => setShowTimeModal(false)}>
+              <X size={24} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={{ gap: 8 }}>
+              {generateTimeOptions().map((time, index) => {
+                const timeString = time.toLocaleTimeString('en-US', { 
+                  hour: 'numeric', 
+                  minute: '2-digit',
+                  hour12: true 
+                });
+                const isSelected = time.getHours() === editDateTime.getHours() && 
+                                 time.getMinutes() === editDateTime.getMinutes();
+                
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={{
+                      backgroundColor: isSelected ? colors.primary + '20' : colors.card,
+                      padding: 16,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: isSelected ? colors.primary : colors.borderLight,
+                    }}
+                    onPress={() => handleTimeSelect(time)}
+                  >
+                    <Text style={{
+                      fontSize: 16,
+                      fontWeight: '600',
+                      color: isSelected ? colors.primary : colors.text
+                    }}>
+                      {timeString}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
   const renderEditModal = () => (
     <Modal
       visible={editModalVisible}
@@ -199,119 +426,178 @@ const InterviewsScreen: React.FC = () => {
     >
       <View style={{
         flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)'
+        paddingHorizontal: 20
       }}>
         <View style={{
-          backgroundColor: 'white',
-          borderRadius: 16,
+          backgroundColor: colors.background,
+          borderRadius: 20,
           padding: 24,
-          margin: 20,
-          width: '90%',
-          maxWidth: 400,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 4,
-          elevation: 5
+          maxHeight: '80%'
         }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937' }}>
-              Edit Interview Time
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 24,
+          }}>
+            <Text style={{
+              fontSize: 20,
+              fontWeight: '700',
+              color: colors.text
+            }}>
+              Edit Interview
             </Text>
-            <TouchableOpacity
-              onPress={() => setEditModalVisible(false)}
-              style={{ padding: 4 }}
-            >
-              <X size={24} color="#6b7280" />
+            <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+              <X size={24} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
-          <Text style={{ fontSize: 16, color: '#374151', marginBottom: 16 }}>
-            {selectedInterview?.role} at {selectedInterview?.company}
-          </Text>
-
-          <View style={{ marginBottom: 20 }}>
-            <Text style={{ fontSize: 14, fontWeight: '600', color: '#1f2937', marginBottom: 8 }}>
-              Date
-            </Text>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: '#d1d5db',
-                borderRadius: 8,
-                padding: 12,
+          {selectedInterview && (
+            <View style={{ marginBottom: 24 }}>
+              <Text style={{
                 fontSize: 16,
-                backgroundColor: '#f9fafb'
-              }}
-              value={editDate}
-              onChangeText={setEditDate}
-              placeholder="YYYY-MM-DD"
-            />
-          </View>
+                fontWeight: '600',
+                color: colors.textSecondary,
+                marginBottom: 4
+              }}>
+                {selectedInterview.role} at {selectedInterview.company}
+              </Text>
+            </View>
+          )}
 
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ fontSize: 14, fontWeight: '600', color: '#1f2937', marginBottom: 8 }}>
-              Time
-            </Text>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: '#d1d5db',
-                borderRadius: 8,
-                padding: 12,
-                fontSize: 16,
-                backgroundColor: '#f9fafb'
-              }}
-              value={editTime}
-              onChangeText={setEditTime}
-              placeholder="HH:MM"
-            />
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ gap: 16, marginBottom: 24 }}>
+            {/* Date Picker */}
             <TouchableOpacity
-              onPress={() => setEditModalVisible(false)}
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: 16,
+                borderWidth: 2,
+                borderColor: colors.borderLight,
+                shadowColor: colors.shadow,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.08,
+                shadowRadius: 8,
+                elevation: 4,
+              }}
+              onPress={() => setShowDateModal(true)}
+            >
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 20,
+              }}>
+                <Calendar size={20} color={colors.primary} />
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={{ fontSize: 14, color: colors.textSecondary, fontWeight: '600' }}>
+                    Interview Date
+                  </Text>
+                  <Text style={{ fontSize: 16, color: colors.text, fontWeight: '600', marginTop: 2 }}>
+                    {editDateTime.toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </Text>
+                </View>
+                <ChevronRight size={20} color={colors.textSecondary} />
+              </View>
+            </TouchableOpacity>
+
+            {/* Time Picker */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: 16,
+                borderWidth: 2,
+                borderColor: colors.borderLight,
+                shadowColor: colors.shadow,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.08,
+                shadowRadius: 8,
+                elevation: 4,
+              }}
+              onPress={() => setShowTimeModal(true)}
+            >
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 20,
+              }}>
+                <Clock size={20} color={colors.primary} />
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={{ fontSize: 14, color: colors.textSecondary, fontWeight: '600' }}>
+                    Interview Time
+                  </Text>
+                  <Text style={{ fontSize: 16, color: colors.text, fontWeight: '600', marginTop: 2 }}>
+                    {editDateTime.toLocaleTimeString('en-US', { 
+                      hour: 'numeric', 
+                      minute: '2-digit',
+                      hour12: true 
+                    })}
+                  </Text>
+                </View>
+                <ChevronRight size={20} color={colors.textSecondary} />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          <View style={{
+            flexDirection: 'row',
+            gap: 12
+          }}>
+            <TouchableOpacity
               style={{
                 flex: 1,
-                backgroundColor: '#f3f4f6',
-                padding: 12,
-                borderRadius: 8,
-                alignItems: 'center'
+                backgroundColor: colors.surface,
+                paddingVertical: 14,
+                borderRadius: 12,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: colors.border,
               }}
+              onPress={() => setEditModalVisible(false)}
             >
-              <Text style={{ color: '#6b7280', fontSize: 16, fontWeight: '600' }}>
+              <Text style={{
+                color: colors.text,
+                fontSize: 16,
+                fontWeight: '600'
+              }}>
                 Cancel
               </Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
-              onPress={handleSaveEdit}
-              disabled={saving}
               style={{
                 flex: 1,
-                backgroundColor: '#007AFF',
-                padding: 12,
-                borderRadius: 8,
+                backgroundColor: colors.primary,
+                paddingVertical: 14,
+                borderRadius: 12,
                 alignItems: 'center',
                 opacity: saving ? 0.7 : 1
               }}
+              onPress={handleSaveEdit}
+              disabled={saving}
             >
               {saving ? (
-                <ActivityIndicator color="white" size="small" />
+                <ActivityIndicator color={colors.textInverse} />
               ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Save size={16} color="white" />
-                  <Text style={{ marginLeft: 6, color: 'white', fontSize: 16, fontWeight: '600' }}>
-                    Save
-                  </Text>
-                </View>
+                <Text style={{
+                  color: colors.textInverse,
+                  fontSize: 16,
+                  fontWeight: '600'
+                }}>
+                  Save Changes
+                </Text>
               )}
             </TouchableOpacity>
           </View>
         </View>
       </View>
+      {renderDateModal()}
+      {renderTimeModal()}
     </Modal>
   );
 
@@ -324,76 +610,70 @@ const InterviewsScreen: React.FC = () => {
     >
       <View style={{
         flex: 1,
+        backgroundColor: colors.overlay,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)'
+        padding: 20
       }}>
         <View style={{
-          backgroundColor: 'white',
+          backgroundColor: colors.card,
           borderRadius: 16,
           padding: 24,
-          margin: 20,
-          width: '90%',
+          width: '100%',
           maxWidth: 400,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 4,
-          elevation: 5
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.2,
+          shadowRadius: 16,
+          elevation: 8,
         }}>
-          <View style={{ alignItems: 'center', marginBottom: 20 }}>
-            <View style={{
-              width: 64,
-              height: 64,
-              borderRadius: 32,
-              backgroundColor: '#fef2f2',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: 16
-            }}>
-              <Trash2 size={32} color="#ef4444" />
-            </View>
-            
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937', marginBottom: 8 }}>
-              Delete Interview
-            </Text>
-            
-            <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
-              Are you sure you want to delete the interview for{'\n'}
-              <Text style={{ fontWeight: '600' }}>
-                {selectedInterview?.role} at {selectedInterview?.company}
-              </Text>
-              ?{'\n\n'}This action cannot be undone.
-            </Text>
-          </View>
+          <Text style={{
+            fontSize: 20,
+            fontWeight: 'bold',
+            color: colors.text,
+            marginBottom: 12,
+            textAlign: 'center'
+          }}>
+            Delete Interview
+          </Text>
+
+          <Text style={{
+            fontSize: 16,
+            color: colors.textSecondary,
+            textAlign: 'center',
+            marginBottom: 24,
+            lineHeight: 22
+          }}>
+            Are you sure you want to delete this interview? This action cannot be undone.
+          </Text>
 
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <TouchableOpacity
               onPress={() => setDeleteModalVisible(false)}
               style={{
                 flex: 1,
-                backgroundColor: '#f3f4f6',
-                padding: 12,
+                backgroundColor: colors.buttonSecondary,
+                padding: 14,
                 borderRadius: 8,
                 alignItems: 'center'
               }}
             >
-              <Text style={{ color: '#6b7280', fontSize: 16, fontWeight: '600' }}>
+              <Text style={{ color: colors.buttonSecondaryText, fontSize: 16, fontWeight: '600' }}>
                 Cancel
               </Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               onPress={confirmDelete}
               style={{
                 flex: 1,
-                backgroundColor: '#ef4444',
-                padding: 12,
+                backgroundColor: colors.error,
+                padding: 14,
                 borderRadius: 8,
                 alignItems: 'center'
               }}
             >
-              <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+              <Text style={{ color: colors.textInverse, fontSize: 16, fontWeight: '600' }}>
                 Delete
               </Text>
             </TouchableOpacity>
@@ -404,159 +684,352 @@ const InterviewsScreen: React.FC = () => {
   );
 
   const renderHeader = () => (
-    <View style={{ marginBottom: 24 }}>
-      <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1f2937', marginBottom: 8 }}>
-        Upcoming Interviews
-      </Text>
-      <Text style={{ fontSize: 16, color: '#6b7280' }}>
-        Manage your scheduled interview sessions
-      </Text>
+    <View style={{
+      marginBottom: 32,
+      paddingHorizontal: 24,
+      paddingTop: 8,
+    }}>
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ 
+          fontSize: 32, 
+          fontWeight: '800', 
+          color: colors.text, 
+          marginBottom: 4,
+          letterSpacing: -0.5
+        }}>
+          Interviews
+        </Text>
+        <Text style={{ 
+          fontSize: 16, 
+          color: colors.textSecondary,
+          fontWeight: '500'
+        }}>
+          Manage your upcoming interview sessions
+        </Text>
+      </View>
+      
+      {interviews.length > 0 && (
+        <View style={{
+          backgroundColor: colors.primary + '10',
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 12,
+          borderLeftWidth: 4,
+          borderLeftColor: colors.primary,
+        }}>
+          <Text style={{ 
+            fontSize: 14, 
+            color: colors.primary, 
+            fontWeight: '600' 
+          }}>
+            {interviews.length} {interviews.length === 1 ? 'interview' : 'interviews'} scheduled
+          </Text>
+        </View>
+      )}
     </View>
   );
 
   const renderEmptyState = () => (
     <View style={{
-      backgroundColor: 'white',
-      padding: 32,
-      borderRadius: 16,
+      flex: 1,
       alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 4
+      justifyContent: 'center',
+      paddingHorizontal: 32,
+      paddingVertical: 64,
     }}>
-      <Calendar size={48} color="#6b7280" />
-      <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1f2937', marginTop: 16, marginBottom: 8 }}>
+      <View style={{
+        backgroundColor: colors.surface,
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 24,
+        borderWidth: 2,
+        borderColor: colors.borderLight,
+        borderStyle: 'dashed',
+      }}>
+        <Calendar size={48} color={colors.textTertiary} />
+      </View>
+      
+      <Text style={{ 
+        fontSize: 24, 
+        fontWeight: '700', 
+        color: colors.text, 
+        marginBottom: 8,
+        textAlign: 'center'
+      }}>
         No Upcoming Interviews
       </Text>
-      <Text style={{ fontSize: 16, color: '#6b7280', textAlign: 'center' }}>
-        Your scheduled interviews will appear here
+      
+      <Text style={{ 
+        fontSize: 16, 
+        color: colors.textSecondary, 
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: 32,
+        maxWidth: 280
+      }}>
+        Schedule your first interview to start practicing and improving your skills
       </Text>
+      
+      <TouchableOpacity
+        style={{
+          backgroundColor: colors.primary,
+          paddingHorizontal: 24,
+          paddingVertical: 14,
+          borderRadius: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          shadowColor: colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 8,
+        }}
+        onPress={() => router.push('/(app)/interview/setup')}
+      >
+        <Calendar size={20} color={colors.textInverse} style={{ marginRight: 8 }} />
+        <Text style={{ 
+          color: colors.textInverse, 
+          fontSize: 16, 
+          fontWeight: '600' 
+        }}>
+          Schedule Interview
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 
   const renderInterviewCard = (interview: Interview) => {
     const isDeleting = deletingId === interview.id;
+    const scheduledDate = new Date(interview.scheduled_at || interview.created_at!);
     
     return (
       <View
         key={interview.id}
         style={{
-          backgroundColor: 'white',
-          padding: 20,
+          backgroundColor: colors.card,
+          marginHorizontal: 20,
+          marginBottom: 12,
           borderRadius: 12,
-          marginBottom: 16,
-          shadowColor: '#000',
+          padding: 14,
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.1,
-          shadowRadius: 2,
-          elevation: 2,
-          opacity: isDeleting ? 0.5 : 1
+          shadowOpacity: 0.06,
+          shadowRadius: 6,
+          elevation: 3,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
+          opacity: isDeleting ? 0.5 : 1,
         }}
       >
         {/* Header Row */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginBottom: 4 }}>
-              {interview.title || `${interview.interview_types?.title || 'Interview'}`}
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <MapPin size={14} color="#6b7280" />
-              <Text style={{ marginLeft: 4, fontSize: 14, color: '#6b7280' }}>
-                {interview.role} at {interview.company}
+        <View style={{ 
+          flexDirection: 'row', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start', 
+          marginBottom: 12 
+        }}>
+          <View style={{ flex: 1, marginRight: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              {getInterviewTypeIcon(interview.interview_types?.title || '')}
+              <Text style={{ 
+                fontSize: 11, 
+                color: colors.textSecondary, 
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                marginLeft: 5
+              }}>
+                {interview.interview_types?.title || 'Interview'}
               </Text>
             </View>
+            
+            <Text style={{ 
+              fontSize: 16, 
+              fontWeight: '700', 
+              color: colors.text, 
+              marginBottom: 2,
+              lineHeight: 20
+            }}>
+              {interview.role}
+            </Text>
+            
+            <Text style={{ 
+              fontSize: 13, 
+              color: colors.textSecondary,
+              fontWeight: '500'
+            }}>
+              {interview.company}
+            </Text>
           </View>
           
           {/* Status Badge */}
           <View style={{
-            backgroundColor: getStatusColor(interview.status) + '20',
+            backgroundColor: getStatusColor(interview.status || '') + '20',
             paddingHorizontal: 8,
             paddingVertical: 4,
-            borderRadius: 6
+            borderRadius: 6,
+            borderWidth: 1,
+            borderColor: getStatusColor(interview.status || '') + '40',
           }}>
             <Text style={{ 
-              fontSize: 12, 
-              fontWeight: '500', 
-              color: getStatusColor(interview.status),
-              textTransform: 'capitalize'
+              fontSize: 10, 
+              fontWeight: '700', 
+              color: getStatusColor(interview.status || ''),
+              textTransform: 'uppercase',
+              letterSpacing: 0.5
             }}>
-              {getStatusText(interview.status)}
+              {getStatusText(interview.status || '')}
             </Text>
           </View>
         </View>
 
-        {/* Interview Details */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-          {getInterviewTypeIcon(interview.interview_types?.type || 'technical')}
-          <Text style={{ marginLeft: 8, fontSize: 14, color: '#6b7280' }}>
-            {interview.interview_types?.title || 'Technical Interview'}
-          </Text>
-          <Text style={{ marginLeft: 16, fontSize: 14, color: '#6b7280' }}>
-            •
-          </Text>
-          <Clock size={14} color="#6b7280" style={{ marginLeft: 16 }} />
-          <Text style={{ marginLeft: 4, fontSize: 14, color: '#6b7280' }}>
-            {interview.duration || 30} minutes
-          </Text>
+        {/* Date & Time Row */}
+        <View style={{
+          backgroundColor: colors.surface,
+          borderRadius: 8,
+          padding: 10,
+          marginBottom: 12,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+            <Calendar size={14} color={colors.primary} />
+            <Text style={{ 
+              fontSize: 13, 
+              color: colors.text, 
+              fontWeight: '600',
+              marginLeft: 6
+            }}>
+              {formatScheduledDate(scheduledDate.toISOString())}
+            </Text>
+          </View>
+          
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Clock size={14} color={colors.primary} />
+            <Text style={{ 
+              fontSize: 13, 
+              color: colors.text, 
+              fontWeight: '600',
+              marginLeft: 6
+            }}>
+              {scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Text>
+          </View>
         </View>
 
-        {/* Date */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-          <Calendar size={14} color="#6b7280" />
-          <Text style={{ marginLeft: 4, fontSize: 14, color: '#6b7280' }}>
-            {interview.scheduled_at 
-              ? `Scheduled for ${formatDate(interview.scheduled_at)}`
-              : `Created ${formatDate(interview.created_at!)}`
-            }
-          </Text>
+        {/* Duration & Level */}
+        <View style={{ 
+          flexDirection: 'row', 
+          justifyContent: 'space-between',
+          marginBottom: 12,
+          paddingHorizontal: 0
+        }}>
+          <View style={{ flex: 0.4 }}>
+            <Text style={{ 
+              fontSize: 11, 
+              color: colors.textSecondary, 
+              fontWeight: '500',
+              marginBottom: 1
+            }}>
+              Duration
+            </Text>
+            <Text style={{ 
+              fontSize: 13, 
+              color: colors.text, 
+              fontWeight: '600' 
+            }}>
+              {interview.duration || 30} min
+            </Text>
+          </View>
+          
+          <View style={{ flex: 0.6 }}>
+            <Text style={{ 
+              fontSize: 11, 
+              color: colors.textSecondary, 
+              fontWeight: '500',
+              marginBottom: 1
+            }}>
+              Level
+            </Text>
+            <Text 
+              numberOfLines={2}
+              style={{ 
+                fontSize: 13, 
+                color: colors.text, 
+                fontWeight: '600',
+                lineHeight: 16
+              }}
+            >
+              {interview.experience_levels?.label || 'Not specified'}
+            </Text>
+          </View>
         </View>
 
         {/* Action Buttons */}
-        <View style={{ flexDirection: 'row', gap: 12 }}>
+        <View style={{ 
+          flexDirection: 'row', 
+          justifyContent: 'space-between',
+          gap: 8
+        }}>
           <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              paddingVertical: 10,
+              borderRadius: 8,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}
             onPress={() => handleEditInterview(interview)}
             disabled={isDeleting}
-            style={{
-              flex: 1,
-              backgroundColor: '#f3f4f6',
-              padding: 12,
-              borderRadius: 8,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: isDeleting ? 0.5 : 1
-            }}
           >
-            <Edit size={16} color="#6b7280" />
-            <Text style={{ marginLeft: 6, color: '#6b7280', fontSize: 14, fontWeight: '500' }}>
-              Edit Time
+            <Edit size={16} color={colors.primary} />
+            <Text style={{ 
+              color: colors.primary, 
+              fontSize: 13, 
+              fontWeight: '600',
+              marginLeft: 4
+            }}>
+              Edit
             </Text>
           </TouchableOpacity>
-
+          
           <TouchableOpacity
-            onPress={() => handleDeleteInterview(interview)}
-            disabled={isDeleting}
             style={{
               flex: 1,
-              backgroundColor: '#fef2f2',
-              padding: 12,
+              backgroundColor: colors.error + '10',
+              paddingVertical: 10,
               borderRadius: 8,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              opacity: isDeleting ? 0.5 : 1
+              borderWidth: 1,
+              borderColor: colors.error + '30',
             }}
+            onPress={() => handleDeleteInterview(interview)}
+            disabled={isDeleting}
           >
             {isDeleting ? (
-              <ActivityIndicator size="small" color="#ef4444" />
+              <ActivityIndicator size="small" color={colors.error} />
             ) : (
-              <Trash2 size={16} color="#ef4444" />
+              <>
+                <Trash2 size={16} color={colors.error} />
+                <Text style={{ 
+                  color: colors.error, 
+                  fontSize: 13, 
+                  fontWeight: '600',
+                  marginLeft: 4
+                }}>
+                  Delete
+                </Text>
+              </>
             )}
-            <Text style={{ marginLeft: 6, color: '#ef4444', fontSize: 14, fontWeight: '500' }}>
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -565,9 +1038,9 @@ const InterviewsScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8fafc' }}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 16, color: '#6b7280', fontSize: 16 }}>Loading interviews...</Text>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ marginTop: 16, color: colors.textSecondary, fontSize: 16 }}>Loading interviews...</Text>
       </View>
     );
   }
@@ -575,14 +1048,15 @@ const InterviewsScreen: React.FC = () => {
   return (
     <>
       <ScrollView 
-        style={{ flex: 1, backgroundColor: '#f8fafc' }}
-        contentContainerStyle={{ padding: 20 }}
+        style={{ flex: 1, backgroundColor: colors.background }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
         refreshControl={
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={onRefresh}
-            colors={['#007AFF']}
-            tintColor="#007AFF"
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
       >
@@ -593,15 +1067,11 @@ const InterviewsScreen: React.FC = () => {
           renderEmptyState()
         ) : (
           <View>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: '#1f2937', marginBottom: 16 }}>
-              {interviews.length} Upcoming Interview{interviews.length > 1 ? 's' : ''}
-            </Text>
             {interviews.map(renderInterviewCard)}
           </View>
         )}
       </ScrollView>
 
-      {/* Modals */}
       {renderEditModal()}
       {renderDeleteModal()}
     </>

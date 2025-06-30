@@ -24,6 +24,7 @@ import {
 } from 'react-native';
 import { DatabaseService, Feedback, Interview } from '../../../src/services/DatabaseService';
 import { useAuthStore } from '../../../src/store/authStore';
+import { useThemeColors } from '../../../src/store/themeStore';
 import { getScoreColor } from '../../../src/utils/helpers';
 
 type TabType = 'summary' | 'skills' | 'transcript' | 'analysis';
@@ -32,6 +33,7 @@ const FeedbackDetailScreen: React.FC = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuthStore();
+  const colors = useThemeColors();
   const [interview, setInterview] = useState<Interview | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [loading, setLoading] = useState(true);
@@ -244,33 +246,66 @@ Explore more creative problem-solving approaches and think beyond conventional s
 
   const getScoreRating = (score: number) => {
     if (score >= 85) return 'Excellent';
-    if (score >= 80) return 'Very Good';
-    if (score >= 70) return 'Good';
+    if (score >= 70) return 'Good';  
     if (score >= 60) return 'Fair';
     return 'Needs Work';
   };
 
+  const getThemeScoreColor = (score: number) => {
+    if (score >= 85) return colors.success;
+    if (score >= 70) return colors.info;
+    if (score >= 60) return colors.warning;
+    return colors.error;
+  };
+
   const renderHeader = () => (
-    <View style={{ backgroundColor: '#1e293b', paddingHorizontal: 20, paddingTop: 50, paddingBottom: 20 }}>
+    <View style={{ 
+      backgroundColor: colors.background, 
+      paddingHorizontal: 24, 
+      paddingTop: 16, 
+      paddingBottom: 24 
+    }}>
       <TouchableOpacity 
         onPress={() => router.back()}
         style={{ 
           flexDirection: 'row', 
           alignItems: 'center', 
-          marginBottom: 20 
+          marginBottom: 24,
+          backgroundColor: colors.surface,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 12,
+          alignSelf: 'flex-start',
+          borderWidth: 1,
+          borderColor: colors.borderLight,
         }}
       >
-        <ArrowLeft size={24} color="white" />
-        <Text style={{ marginLeft: 8, fontSize: 16, color: 'white', fontWeight: '500' }}>
+        <ArrowLeft size={20} color={colors.text} />
+        <Text style={{ 
+          marginLeft: 8, 
+          fontSize: 14, 
+          color: colors.text, 
+          fontWeight: '600' 
+        }}>
           Back to Feedback
         </Text>
       </TouchableOpacity>
       
       <View>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white', marginBottom: 8 }}>
+        <Text style={{ 
+          fontSize: 28, 
+          fontWeight: '800', 
+          color: colors.text, 
+          marginBottom: 4,
+          letterSpacing: -0.5
+        }}>
           Interview Feedback
         </Text>
-        <Text style={{ fontSize: 16, color: '#94a3b8' }}>
+        <Text style={{ 
+          fontSize: 16, 
+          color: colors.textSecondary,
+          fontWeight: '500'
+        }}>
           {interview?.role} at {interview?.company}
         </Text>
       </View>
@@ -279,70 +314,158 @@ Explore more creative problem-solving approaches and think beyond conventional s
 
   const renderOverallScore = () => (
     <View style={{
-      backgroundColor: '#1e293b',
-      margin: 20,
-      borderRadius: 16,
-      padding: 24,
-      alignItems: 'center'
+      backgroundColor: colors.card,
+      marginHorizontal: 24,
+      marginBottom: 20,
+      borderRadius: 20,
+      padding: 28,
+      alignItems: 'center',
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 16,
+      elevation: 8,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
     }}>
-      <Text style={{ fontSize: 18, fontWeight: '600', color: 'white', marginBottom: 20 }}>
-        Overall Score
+      <Text style={{ 
+        fontSize: 18, 
+        fontWeight: '700', 
+        color: colors.text, 
+        marginBottom: 24 
+      }}>
+        Overall Performance
       </Text>
       
       <View style={{
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        borderWidth: 6,
-        borderColor: getScoreColor(feedback?.overall_score || 0),
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        borderWidth: 8,
+        borderColor: getThemeScoreColor(feedback?.overall_score || 0),
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16
+        marginBottom: 20,
+        backgroundColor: getThemeScoreColor(feedback?.overall_score || 0) + '10',
       }}>
         <Text style={{
-          fontSize: 28,
-          fontWeight: 'bold',
-          color: 'white'
+          fontSize: 32,
+          fontWeight: '800',
+          color: getThemeScoreColor(feedback?.overall_score || 0),
+          lineHeight: 36
         }}>
           {feedback?.overall_score || '--'}
         </Text>
+        <Text style={{
+          fontSize: 12,
+          fontWeight: '600',
+          color: getThemeScoreColor(feedback?.overall_score || 0),
+          opacity: 0.8
+        }}>
+          SCORE
+        </Text>
       </View>
       
-      <Text style={{ fontSize: 16, fontWeight: '600', color: getScoreColor(feedback?.overall_score || 0) }}>
-        {getScoreRating(feedback?.overall_score || 0)}
-      </Text>
+      <View style={{
+        backgroundColor: getThemeScoreColor(feedback?.overall_score || 0) + '20',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: getThemeScoreColor(feedback?.overall_score || 0) + '40',
+      }}>
+        <Text style={{ 
+          fontSize: 14, 
+          fontWeight: '700', 
+          color: getThemeScoreColor(feedback?.overall_score || 0),
+          textTransform: 'uppercase',
+          letterSpacing: 0.5
+        }}>
+          {getScoreRating(feedback?.overall_score || 0)}
+        </Text>
+      </View>
     </View>
   );
 
   const renderKeyMetrics = () => (
     <View style={{
-      backgroundColor: '#1e293b',
-      marginHorizontal: 20,
+      backgroundColor: colors.card,
+      marginHorizontal: 24,
       marginBottom: 20,
       borderRadius: 16,
-      padding: 20
+      padding: 24,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      elevation: 4,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
     }}>
-      <Text style={{ fontSize: 18, fontWeight: '600', color: 'white', marginBottom: 16 }}>
-        Key Metrics
+      <Text style={{ 
+        fontSize: 18, 
+        fontWeight: '700', 
+        color: colors.text, 
+        marginBottom: 20 
+      }}>
+        Performance Metrics
       </Text>
       
       <View style={{ flexDirection: 'row', gap: 20 }}>
         <View style={{ flex: 1, alignItems: 'center' }}>
-          <Award size={20} color="#3b82f6" />
-          <Text style={{ fontSize: 12, color: '#94a3b8', marginTop: 8, marginBottom: 4 }}>
+          <View style={{
+            backgroundColor: colors.primary + '20',
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 12,
+          }}>
+            <Award size={24} color={colors.primary} />
+          </View>
+          <Text style={{ 
+            fontSize: 12, 
+            color: colors.textSecondary, 
+            marginBottom: 4,
+            fontWeight: '500'
+          }}>
             Overall Score
           </Text>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'white' }}>
+          <Text style={{ 
+            fontSize: 20, 
+            fontWeight: '700', 
+            color: colors.text 
+          }}>
             {feedback?.overall_score || '--'}%
           </Text>
         </View>
         
         <View style={{ flex: 1, alignItems: 'center' }}>
-          <Clock size={20} color="#10b981" />
-          <Text style={{ fontSize: 12, color: '#94a3b8', marginTop: 8, marginBottom: 4 }}>
+          <View style={{
+            backgroundColor: colors.success + '20',
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 12,
+          }}>
+            <Clock size={24} color={colors.success} />
+          </View>
+          <Text style={{ 
+            fontSize: 12, 
+            color: colors.textSecondary, 
+            marginBottom: 4,
+            fontWeight: '500'
+          }}>
             Duration
           </Text>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', color: 'white' }}>
+          <Text style={{ 
+            fontSize: 20, 
+            fontWeight: '700', 
+            color: colors.text 
+          }}>
             {interview?.duration || 20} min
           </Text>
         </View>
@@ -352,69 +475,90 @@ Explore more creative problem-solving approaches and think beyond conventional s
 
   const renderInterviewConfig = () => (
     <View style={{
-      backgroundColor: '#1e293b',
-      marginHorizontal: 20,
+      backgroundColor: colors.card,
+      marginHorizontal: 24,
       marginBottom: 20,
       borderRadius: 16,
-      padding: 20
+      padding: 24,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      elevation: 4,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
     }}>
-      <Text style={{ fontSize: 18, fontWeight: '600', color: 'white', marginBottom: 16 }}>
+      <Text style={{ 
+        fontSize: 18, 
+        fontWeight: '700', 
+        color: colors.text, 
+        marginBottom: 20 
+      }}>
         Interview Details
       </Text>
       
-      <View style={{ gap: 12 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Building size={16} color="#7c3aed" />
-            <Text style={{ marginLeft: 8, color: '#94a3b8', fontSize: 14 }}>Position</Text>
+      <View style={{ gap: 16 }}>
+        {[
+          { icon: Building, label: 'Position', value: interview?.role || 'Product Manager', color: colors.accent },
+          { icon: Building, label: 'Company', value: interview?.company || 'Amazon', color: colors.info },
+          { icon: Target, label: 'Type', value: interview?.interview_types?.title || 'Technical', color: colors.primary },
+          { icon: Zap, label: 'Level', value: interview?.experience_levels?.label || 'Entry Level', color: colors.success }
+        ].map((item, index) => (
+          <View key={index} style={{ 
+            flexDirection: 'row', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            backgroundColor: colors.surface,
+            padding: 16,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: colors.borderLight,
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{
+                backgroundColor: item.color + '20',
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 12,
+              }}>
+                <item.icon size={16} color={item.color} />
+              </View>
+              <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '500' }}>
+                {item.label}
+              </Text>
+            </View>
+            <Text style={{ 
+              color: colors.text, 
+              fontSize: 14, 
+              fontWeight: '600',
+              maxWidth: 150,
+              textAlign: 'right'
+            }}>
+              {item.value}
+            </Text>
           </View>
-          <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
-            {interview?.role || 'Product Manager'}
-          </Text>
-        </View>
-        
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Building size={16} color="#1e40af" />
-            <Text style={{ marginLeft: 8, color: '#94a3b8', fontSize: 14 }}>Company</Text>
-          </View>
-          <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
-            {interview?.company || 'Amazon'}
-          </Text>
-        </View>
-        
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Target size={16} color="#3b82f6" />
-            <Text style={{ marginLeft: 8, color: '#94a3b8', fontSize: 14 }}>Type</Text>
-          </View>
-          <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
-            {interview?.interview_types?.title || 'Technical'}
-          </Text>
-        </View>
-        
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Zap size={16} color="#059669" />
-            <Text style={{ marginLeft: 8, color: '#94a3b8', fontSize: 14 }}>Level</Text>
-          </View>
-          <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
-            {interview?.experience_levels?.label || 'Entry Level'}
-          </Text>
-        </View>
+        ))}
       </View>
     </View>
   );
 
   const renderTabs = () => (
     <View style={{ 
-      backgroundColor: '#1e293b', 
-      paddingHorizontal: 20, 
-      borderBottomWidth: 1, 
-      borderBottomColor: '#334155' 
+      backgroundColor: colors.background, 
+      paddingHorizontal: 24, 
+      marginBottom: 16
     }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{
+        backgroundColor: colors.surface,
+        borderRadius: 12,
+        padding: 4,
+        borderWidth: 1,
+        borderColor: colors.borderLight,
+      }}>
+        <View style={{ flexDirection: 'row' }}>
           {[
             { key: 'summary', label: 'Summary', icon: FileText },
             { key: 'skills', label: 'Skills', icon: BarChart3 },
@@ -425,18 +569,23 @@ Explore more creative problem-solving approaches and think beyond conventional s
               key={tab.key}
               onPress={() => setActiveTab(tab.key as TabType)}
               style={{
+                flex: 1,
                 paddingVertical: 12,
-                paddingHorizontal: 16,
-                borderBottomWidth: 2,
-                borderBottomColor: activeTab === tab.key ? '#3b82f6' : 'transparent',
-                opacity: activeTab === tab.key ? 1 : 0.7,
-                minWidth: 80
+                paddingHorizontal: 8,
+                borderRadius: 8,
+                backgroundColor: activeTab === tab.key ? colors.primary : 'transparent',
+                alignItems: 'center',
               }}
             >
+              <tab.icon 
+                size={16} 
+                color={activeTab === tab.key ? colors.textInverse : colors.textSecondary}
+                style={{ marginBottom: 4 }}
+              />
               <Text style={{ 
-                color: activeTab === tab.key ? '#3b82f6' : 'white', 
-                fontSize: 14,
-                fontWeight: activeTab === tab.key ? '600' : '400',
+                color: activeTab === tab.key ? colors.textInverse : colors.textSecondary, 
+                fontSize: 12,
+                fontWeight: activeTab === tab.key ? '600' : '500',
                 textAlign: 'center'
               }}>
                 {tab.label}
@@ -444,30 +593,76 @@ Explore more creative problem-solving approaches and think beyond conventional s
             </TouchableOpacity>
           ))}
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 
   const renderSummaryTab = () => (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white', marginBottom: 16 }}>
-        Overall Performance
-      </Text>
-      
-      <Text style={{ 
-        fontSize: 16, 
-        color: '#e2e8f0', 
-        lineHeight: 24,
-        marginBottom: 32
+    <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
+      {/* Summary Section */}
+      <View style={{
+        backgroundColor: colors.card,
+        borderRadius: 16,
+        padding: 24,
+        marginBottom: 20,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: colors.borderLight,
       }}>
-        {feedback?.summary}
-      </Text>
+        <Text style={{ 
+          fontSize: 18, 
+          fontWeight: '700', 
+          color: colors.text, 
+          marginBottom: 16 
+        }}>
+          Performance Summary
+        </Text>
+        
+        <Text style={{ 
+          fontSize: 16, 
+          color: colors.textSecondary, 
+          lineHeight: 24,
+          fontWeight: '500'
+        }}>
+          {feedback?.summary}
+        </Text>
+      </View>
 
       {/* Strengths */}
-      <View style={{ marginBottom: 32 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-          <CheckCircle size={20} color="#10b981" />
-          <Text style={{ marginLeft: 8, fontSize: 18, fontWeight: '600', color: 'white' }}>
+      <View style={{
+        backgroundColor: colors.card,
+        borderRadius: 16,
+        padding: 24,
+        marginBottom: 20,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: colors.borderLight,
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+          <View style={{
+            backgroundColor: colors.success + '20',
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 12,
+          }}>
+            <CheckCircle size={20} color={colors.success} />
+          </View>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: '700', 
+            color: colors.text 
+          }}>
             Strengths
           </Text>
         </View>
@@ -476,15 +671,21 @@ Explore more creative problem-solving approaches and think beyond conventional s
           <View key={index} style={{ 
             flexDirection: 'row', 
             alignItems: 'flex-start', 
-            marginBottom: 12 
+            marginBottom: 16,
+            backgroundColor: colors.surface,
+            padding: 16,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: colors.borderLight,
           }}>
-            <CheckCircle size={16} color="#10b981" style={{ marginTop: 2 }} />
+            <CheckCircle size={16} color={colors.success} style={{ marginTop: 2 }} />
             <Text style={{ 
               flex: 1, 
               marginLeft: 12,
               fontSize: 14, 
-              color: '#e2e8f0', 
-              lineHeight: 20 
+              color: colors.text, 
+              lineHeight: 20,
+              fontWeight: '500'
             }}>
               {strength}
             </Text>
@@ -493,10 +694,35 @@ Explore more creative problem-solving approaches and think beyond conventional s
       </View>
 
       {/* Areas for Improvement */}
-      <View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-          <TrendingUp size={20} color="#f59e0b" />
-          <Text style={{ marginLeft: 8, fontSize: 18, fontWeight: '600', color: 'white' }}>
+      <View style={{
+        backgroundColor: colors.card,
+        borderRadius: 16,
+        padding: 24,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: colors.borderLight,
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+          <View style={{
+            backgroundColor: colors.warning + '20',
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 12,
+          }}>
+            <TrendingUp size={20} color={colors.warning} />
+          </View>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: '700', 
+            color: colors.text 
+          }}>
             Areas for Improvement
           </Text>
         </View>
@@ -505,21 +731,27 @@ Explore more creative problem-solving approaches and think beyond conventional s
           <View key={index} style={{ 
             flexDirection: 'row', 
             alignItems: 'flex-start', 
-            marginBottom: 12 
+            marginBottom: 16,
+            backgroundColor: colors.surface,
+            padding: 16,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: colors.borderLight,
           }}>
             <View style={{
-              width: 6,
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: '#f59e0b',
-              marginTop: 7
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: colors.warning,
+              marginTop: 6
             }} />
             <Text style={{ 
               flex: 1, 
               marginLeft: 12,
               fontSize: 14, 
-              color: '#e2e8f0', 
-              lineHeight: 20 
+              color: colors.text, 
+              lineHeight: 20,
+              fontWeight: '500'
             }}>
               {improvement}
             </Text>
@@ -530,49 +762,130 @@ Explore more creative problem-solving approaches and think beyond conventional s
   );
 
   const renderSkillsTab = () => (
-    <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white', marginBottom: 24 }}>
-        Skills Assessment
-      </Text>
-      
+    <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
       {[
-        { label: 'Technical Skills', score: feedback?.technical_score || 0, icon: Zap, feedback: feedback?.technical_feedback },
-        { label: 'Communication', score: feedback?.communication_score || 0, icon: MessageSquare, feedback: feedback?.communication_feedback },
-        { label: 'Problem Solving', score: feedback?.problem_solving_score || 0, icon: TrendingUp, feedback: feedback?.problem_solving_feedback },
-        { label: 'Experience', score: feedback?.experience_score || 0, icon: User, feedback: feedback?.experience_feedback }
+        { 
+          label: 'Technical Skills', 
+          score: feedback?.technical_score || 0, 
+          icon: Zap, 
+          feedback: feedback?.technical_feedback,
+          color: colors.accent
+        },
+        { 
+          label: 'Communication', 
+          score: feedback?.communication_score || 0, 
+          icon: MessageSquare, 
+          feedback: feedback?.communication_feedback,
+          color: colors.info
+        },
+        { 
+          label: 'Problem Solving', 
+          score: feedback?.problem_solving_score || 0, 
+          icon: TrendingUp, 
+          feedback: feedback?.problem_solving_feedback,
+          color: colors.primary
+        },
+        { 
+          label: 'Experience', 
+          score: feedback?.experience_score || 0, 
+          icon: User, 
+          feedback: feedback?.experience_feedback,
+          color: colors.success
+        }
       ].map((skill, index) => (
-        <View key={index} style={{ marginBottom: 32 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <skill.icon size={16} color="#94a3b8" />
-              <Text style={{ marginLeft: 8, fontSize: 16, color: 'white', fontWeight: '600' }}>
+        <View key={index} style={{
+          backgroundColor: colors.card,
+          borderRadius: 16,
+          padding: 24,
+          marginBottom: 20,
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          elevation: 4,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
+        }}>
+          <View style={{ 
+            flexDirection: 'row', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: 20 
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+              <View style={{
+                backgroundColor: skill.color + '20',
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 12,
+              }}>
+                <skill.icon size={20} color={skill.color} />
+              </View>
+              <Text style={{ 
+                fontSize: 16, 
+                color: colors.text, 
+                fontWeight: '700',
+                flex: 1
+              }}>
                 {skill.label}
               </Text>
             </View>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: getScoreColor(skill.score) }}>
-              {skill.score}%
-            </Text>
+            
+            <View style={{
+              backgroundColor: getThemeScoreColor(skill.score) + '20',
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: getThemeScoreColor(skill.score) + '40',
+            }}>
+              <Text style={{ 
+                fontSize: 14, 
+                fontWeight: '700', 
+                color: getThemeScoreColor(skill.score)
+              }}>
+                {skill.score}%
+              </Text>
+            </View>
           </View>
           
           <View style={{ 
-            height: 6, 
-            backgroundColor: '#334155', 
-            borderRadius: 3,
+            height: 8, 
+            backgroundColor: colors.surface, 
+            borderRadius: 4,
             overflow: 'hidden',
-            marginBottom: 12
+            marginBottom: 16,
+            borderWidth: 1,
+            borderColor: colors.borderLight,
           }}>
             <View style={{
               height: '100%',
               width: `${skill.score}%`,
-              backgroundColor: getScoreColor(skill.score),
-              borderRadius: 3
+              backgroundColor: getThemeScoreColor(skill.score),
+              borderRadius: 4
             }} />
           </View>
           
           {skill.feedback && (
-            <Text style={{ fontSize: 14, color: '#cbd5e1', lineHeight: 20 }}>
-              {skill.feedback}
-            </Text>
+            <View style={{
+              backgroundColor: colors.surface,
+              padding: 16,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: colors.borderLight,
+            }}>
+              <Text style={{ 
+                fontSize: 14, 
+                color: colors.textSecondary, 
+                lineHeight: 20,
+                fontWeight: '500'
+              }}>
+                {skill.feedback}
+              </Text>
+            </View>
           )}
         </View>
       ))}
@@ -905,43 +1218,111 @@ Explore more creative problem-solving approaches and think beyond conventional s
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' }}>
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={{ marginTop: 16, color: '#94a3b8', fontSize: 16 }}>Loading feedback...</Text>
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        backgroundColor: colors.background 
+      }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ 
+          marginTop: 16, 
+          color: colors.textSecondary, 
+          fontSize: 16,
+          fontWeight: '500'
+        }}>
+          Loading feedback...
+        </Text>
       </View>
     );
   }
 
   if (!interview) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' }}>
-        <FileText size={48} color="#94a3b8" style={{ marginBottom: 16 }} />
-        <Text style={{ fontSize: 18, color: '#94a3b8', marginBottom: 8 }}>Interview not found</Text>
-        <Text style={{ fontSize: 14, color: '#64748b', marginBottom: 24, textAlign: 'center' }}>
-          The interview data could not be loaded
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        backgroundColor: colors.background,
+        paddingHorizontal: 32
+      }}>
+        <View style={{
+          backgroundColor: colors.surface,
+          width: 100,
+          height: 100,
+          borderRadius: 50,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 24,
+          borderWidth: 2,
+          borderColor: colors.borderLight,
+          borderStyle: 'dashed',
+        }}>
+          <FileText size={40} color={colors.textTertiary} />
+        </View>
+        
+        <Text style={{ 
+          fontSize: 24, 
+          fontWeight: '700', 
+          color: colors.text, 
+          marginBottom: 8,
+          textAlign: 'center'
+        }}>
+          Interview not found
         </Text>
+        
+        <Text style={{ 
+          fontSize: 16, 
+          color: colors.textSecondary, 
+          marginBottom: 32, 
+          textAlign: 'center',
+          lineHeight: 22
+        }}>
+          The interview data could not be loaded. Please try again later.
+        </Text>
+        
         <TouchableOpacity 
           onPress={() => router.back()}
-          style={{ backgroundColor: '#3b82f6', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8 }}
+          style={{ 
+            backgroundColor: colors.primary, 
+            paddingHorizontal: 24, 
+            paddingVertical: 14, 
+            borderRadius: 12,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
         >
-          <Text style={{ color: 'white', fontWeight: '600' }}>Go Back</Text>
+          <Text style={{ 
+            color: colors.textInverse, 
+            fontWeight: '600',
+            fontSize: 16
+          }}>
+            Go Back
+          </Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0f172a' }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       {renderHeader()}
       
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView 
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         {renderOverallScore()}
         {renderKeyMetrics()}
         {renderInterviewConfig()}
         
         {renderTabs()}
         
-        <View style={{ backgroundColor: '#0f172a' }}>
+        <View style={{ backgroundColor: colors.background }}>
           {renderTabContent()}
         </View>
       </ScrollView>

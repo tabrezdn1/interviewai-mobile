@@ -11,11 +11,13 @@ import {
 } from 'react-native';
 import { DatabaseService, Interview } from '../../../src/services/DatabaseService';
 import { useAuthStore } from '../../../src/store/authStore';
+import { useThemeColors } from '../../../src/store/themeStore';
 import { formatDate } from '../../../src/utils/helpers';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
   const { user, loading: authLoading } = useAuthStore();
+  const colors = useThemeColors();
   
   const [stats, setStats] = useState({
     upcomingInterviews: 0,
@@ -67,14 +69,14 @@ const Dashboard: React.FC = () => {
 
   const renderQuickActions = () => (
     <View style={{ marginBottom: 32 }}>
-      {/* Single compelling Schedule Now button */}
+      {/* Single compelling Schedule Now button with gradient effect */}
       <TouchableOpacity
         onPress={() => router.push('/(app)/interview/setup')}
         style={{
           borderRadius: 16,
           padding: 4,
           alignItems: 'center',
-          shadowColor: '#007AFF',
+          shadowColor: colors.primary,
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.3,
           shadowRadius: 16,
@@ -88,9 +90,8 @@ const Dashboard: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: 70,
-          backgroundColor: '#007AFF',
-          // Gradient effect using multiple layers
-          shadowColor: '#5856D6',
+          backgroundColor: colors.primary,
+          shadowColor: colors.accent,
           shadowOffset: { width: 0, height: 0 },
           shadowOpacity: 0.8,
           shadowRadius: 20,
@@ -102,13 +103,13 @@ const Dashboard: React.FC = () => {
               padding: 8,
               marginRight: 12,
             }}>
-              <Plus size={24} color="white" />
+              <Plus size={24} color={colors.textInverse} />
             </View>
             <View>
               <Text style={{
                 fontSize: 20,
                 fontWeight: 'bold',
-                color: 'white',
+                color: colors.textInverse,
                 textAlign: 'center',
               }}>
                 Schedule Now
@@ -146,31 +147,33 @@ const Dashboard: React.FC = () => {
         {/* Upcoming Card */}
         <View style={{
           flex: 1,
-          backgroundColor: '#1e293b',
+          backgroundColor: colors.card,
           borderRadius: 20,
           padding: 20,
           alignItems: 'center',
-          shadowColor: '#000',
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
           elevation: 4,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
         }}>
           <View style={{
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            backgroundColor: colors.info + '20',
             borderRadius: 12,
             padding: 12,
             marginBottom: 12,
           }}>
-            <Clock size={24} color="#3b82f6" />
+            <Clock size={24} color={colors.info} />
           </View>
-          <Text style={{ fontSize: 14, color: '#94a3b8', marginBottom: 4, textAlign: 'center' }}>
+          <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4, textAlign: 'center' }}>
             Upcoming
           </Text>
-          <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white', marginBottom: 2 }}>
+          <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.text, marginBottom: 2 }}>
             {stats.upcomingInterviews}
           </Text>
-          <Text style={{ fontSize: 12, color: '#64748b', textAlign: 'center' }}>
+          <Text style={{ fontSize: 12, color: colors.textTertiary, textAlign: 'center' }}>
             Scheduled
           </Text>
         </View>
@@ -178,31 +181,33 @@ const Dashboard: React.FC = () => {
         {/* Completed Card */}
         <View style={{
           flex: 1,
-          backgroundColor: '#1e293b',
+          backgroundColor: colors.card,
           borderRadius: 20,
           padding: 20,
           alignItems: 'center',
-          shadowColor: '#000',
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
           elevation: 4,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
         }}>
           <View style={{
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            backgroundColor: colors.success + '20',
             borderRadius: 12,
             padding: 12,
             marginBottom: 12,
           }}>
-            <CheckCircle size={24} color="#10b981" />
+            <CheckCircle size={24} color={colors.success} />
           </View>
-          <Text style={{ fontSize: 14, color: '#94a3b8', marginBottom: 4, textAlign: 'center' }}>
+          <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4, textAlign: 'center' }}>
             Completed
           </Text>
-          <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white', marginBottom: 2 }}>
+          <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.text, marginBottom: 2 }}>
             {stats.completedInterviews}
           </Text>
-          <Text style={{ fontSize: 12, color: '#64748b', textAlign: 'center' }}>
+          <Text style={{ fontSize: 12, color: colors.textTertiary, textAlign: 'center' }}>
             Interviews
           </Text>
         </View>
@@ -210,31 +215,33 @@ const Dashboard: React.FC = () => {
         {/* Remaining Minutes Card */}
         <View style={{
           flex: 1,
-          backgroundColor: '#1e293b',
+          backgroundColor: colors.card,
           borderRadius: 20,
           padding: 20,
           alignItems: 'center',
-          shadowColor: '#000',
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
           elevation: 4,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
         }}>
           <View style={{
-            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            backgroundColor: colors.warning + '20',
             borderRadius: 12,
             padding: 12,
             marginBottom: 12,
           }}>
-            <Clock size={24} color="#f59e0b" />
+            <Clock size={24} color={colors.warning} />
           </View>
-          <Text style={{ fontSize: 14, color: '#94a3b8', marginBottom: 4, textAlign: 'center' }}>
+          <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4, textAlign: 'center' }}>
             Remaining
           </Text>
-          <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white', marginBottom: 2 }}>
+          <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.text, marginBottom: 2 }}>
             {stats.remainingMinutes}
           </Text>
-          <Text style={{ fontSize: 12, color: '#64748b', textAlign: 'center' }}>
+          <Text style={{ fontSize: 12, color: colors.textTertiary, textAlign: 'center' }}>
             Minutes
           </Text>
         </View>
@@ -245,28 +252,30 @@ const Dashboard: React.FC = () => {
   const renderRecentActivity = () => (
     <View style={{ marginBottom: 24 }}>
       <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white' }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>
           Recent Activity
         </Text>
       </View>
       
       {recentInterviews.length === 0 ? (
         <View style={{
-          backgroundColor: '#1e293b',
+          backgroundColor: colors.card,
           padding: 24,
           borderRadius: 16,
           alignItems: 'center',
-          shadowColor: '#000',
+          shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.1,
           shadowRadius: 8,
-          elevation: 4
+          elevation: 4,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
         }}>
-          <MessageSquare size={32} color="#64748b" />
-          <Text style={{ fontSize: 16, fontWeight: '500', color: 'white', marginTop: 12 }}>
+          <MessageSquare size={32} color={colors.textTertiary} />
+          <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text, marginTop: 12 }}>
             No recent interviews
           </Text>
-          <Text style={{ fontSize: 14, color: '#64748b', marginTop: 4, textAlign: 'center' }}>
+          <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 4, textAlign: 'center' }}>
             Start your first interview to see activity here
           </Text>
         </View>
@@ -286,45 +295,47 @@ const Dashboard: React.FC = () => {
                 }
               }}
               style={{
-                backgroundColor: '#1e293b',
+                backgroundColor: colors.card,
                 padding: 16,
                 borderRadius: 16,
-                shadowColor: '#000',
+                shadowColor: colors.shadow,
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.1,
                 shadowRadius: 8,
-                elevation: 4
+                elevation: 4,
+                borderWidth: 1,
+                borderColor: colors.borderLight,
               }}
             >
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', color: 'white' }}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text }}>
                     {interview.title || `${interview.interview_types?.title || 'Interview'}`}
                   </Text>
-                  <Text style={{ fontSize: 14, color: '#94a3b8', marginTop: 2 }}>
+                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 2 }}>
                     {interview.role} at {interview.company} • {formatDate(interview.created_at!)}
                   </Text>
                 </View>
                 <View style={{ alignItems: 'center' }}>
                   {interview.status === 'completed' ? (
                     <>
-                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: interview.score && interview.score >= 70 ? '#10b981' : '#f59e0b' }}>
+                      <Text style={{ fontSize: 18, fontWeight: 'bold', color: interview.score && interview.score >= 70 ? colors.success : colors.warning }}>
                         {interview.score || '--'}%
                       </Text>
-                      <Text style={{ fontSize: 12, color: '#64748b', textTransform: 'capitalize' }}>
+                      <Text style={{ fontSize: 12, color: colors.textTertiary, textTransform: 'capitalize' }}>
                         {interview.status}
                       </Text>
                     </>
                   ) : (
                     <View style={{
-                      backgroundColor: interview.status === 'scheduled' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(100, 116, 139, 0.2)',
+                      backgroundColor: interview.status === 'scheduled' ? colors.info + '20' : colors.textTertiary + '20',
                       paddingHorizontal: 8,
                       paddingVertical: 4,
                       borderRadius: 8
                     }}>
                       <Text style={{ 
                         fontSize: 12, 
-                        color: interview.status === 'scheduled' ? '#3b82f6' : '#64748b',
+                        color: interview.status === 'scheduled' ? colors.info : colors.textTertiary,
                         fontWeight: '500',
                         textTransform: 'capitalize'
                       }}>
@@ -343,33 +354,33 @@ const Dashboard: React.FC = () => {
 
   if (authLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' }}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 16, color: '#64748b', fontSize: 16 }}>Loading...</Text>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ marginTop: 16, color: colors.textSecondary, fontSize: 16 }}>Loading...</Text>
       </View>
     );
   }
 
   return (
     <ScrollView 
-      style={{ flex: 1, backgroundColor: '#0f172a' }}
+      style={{ flex: 1, backgroundColor: colors.background }}
       refreshControl={
         <RefreshControl
           refreshing={loading}
           onRefresh={fetchDashboardData}
-          colors={['#007AFF']}
-          tintColor="#007AFF"
+          colors={[colors.primary]}
+          tintColor={colors.primary}
         />
       }
     >
       <View style={{ padding: 24, paddingTop: 40 }}>
         {/* Greeting */}
         <View style={{ marginBottom: 32 }}>
-          <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white', marginBottom: 8 }}>
+          <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>
             Good {getTimeOfDay()}, {user?.name || 'TestUser1'}! 
             <Text style={{ fontSize: 32 }}>👋</Text>
           </Text>
-          <Text style={{ fontSize: 16, color: '#64748b' }}>
+          <Text style={{ fontSize: 16, color: colors.textSecondary }}>
             Ready to ace your next interview?
           </Text>
         </View>

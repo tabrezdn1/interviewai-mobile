@@ -8,6 +8,7 @@ export interface InterviewFormData {
   experience: string;
   difficulty: string;
   duration: number;
+  scheduled_at?: string;
   interviewMode?: string;
   selectedRounds?: string[];
   roundDurations?: Record<string, number>;
@@ -132,7 +133,7 @@ export async function createInterview(userId: string, formData: InterviewFormDat
       experience_level_id: experienceLevelId,
       difficulty_level_id: difficultyLevelData.id,
       status: 'scheduled',
-      scheduled_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      scheduled_at: formData.scheduled_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       duration: formData.duration,
       prompt_status: 'pending'
     };

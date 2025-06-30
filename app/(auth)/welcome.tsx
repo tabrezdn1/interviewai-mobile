@@ -11,13 +11,21 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useThemeColors } from '../../src/store/themeStore';
 
 const { width, height } = Dimensions.get('window');
 
 const Welcome = () => {
+  const colors = useThemeColors();
+
+  // Get gradient colors from theme or fallback
+  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
+    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
+    : ['#0f172a', '#1e293b', '#334155'] as const);
+
   return (
     <LinearGradient
-      colors={['#f8fafc', '#e0f2fe', '#f3e8ff']}
+      colors={gradientColors as any}
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -25,36 +33,36 @@ const Welcome = () => {
           {/* Hero Section */}
           <View style={styles.hero}>
             <View style={styles.logoContainer}>
-              <View style={styles.logo}>
+              <View style={[styles.logo, { backgroundColor: colors.primary + '20' }]}>
                 <Text style={styles.logoText}>🎯</Text>
               </View>
             </View>
             
-            <Text style={styles.title}>InterviewAI</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.title, { color: colors.text }]}>InterviewAI</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               Master your interview skills with AI-powered practice sessions
             </Text>
             
             <View style={styles.featuresContainer}>
-              <View style={styles.feature}>
-                <View style={styles.featureIcon}>
-                  <Ionicons name="videocam" size={24} color="#3B82F6" />
+              <View style={[styles.feature, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <View style={[styles.featureIcon, { backgroundColor: colors.surface }]}>
+                  <Ionicons name="videocam" size={24} color={colors.info} />
                 </View>
-                <Text style={styles.featureText}>AI Video Interviews</Text>
+                <Text style={[styles.featureText, { color: colors.text }]}>AI Video Interviews</Text>
               </View>
               
-              <View style={styles.feature}>
-                <View style={styles.featureIcon}>
-                  <Ionicons name="analytics" size={24} color="#10B981" />
+              <View style={[styles.feature, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <View style={[styles.featureIcon, { backgroundColor: colors.surface }]}>
+                  <Ionicons name="analytics" size={24} color={colors.success} />
                 </View>
-                <Text style={styles.featureText}>Real-time Feedback</Text>
+                <Text style={[styles.featureText, { color: colors.text }]}>Real-time Feedback</Text>
               </View>
               
-              <View style={styles.feature}>
-                <View style={styles.featureIcon}>
-                  <Ionicons name="trending-up" size={24} color="#F59E0B" />
+              <View style={[styles.feature, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <View style={[styles.featureIcon, { backgroundColor: colors.surface }]}>
+                  <Ionicons name="trending-up" size={24} color={colors.warning} />
                 </View>
-                <Text style={styles.featureText}>Performance Tracking</Text>
+                <Text style={[styles.featureText, { color: colors.text }]}>Performance Tracking</Text>
               </View>
             </View>
           </View>
@@ -62,21 +70,21 @@ const Welcome = () => {
           {/* CTA Section */}
           <View style={styles.ctaSection}>
             <TouchableOpacity
-              style={styles.primaryButton}
+              style={[styles.primaryButton, { backgroundColor: colors.primary }]}
               onPress={() => router.push('/(auth)/signup')}
             >
-              <Text style={styles.primaryButtonText}>Get Started</Text>
-              <Ionicons name="arrow-forward" size={20} color="white" />
+              <Text style={[styles.primaryButtonText, { color: colors.textInverse }]}>Get Started</Text>
+              <Ionicons name="arrow-forward" size={20} color={colors.textInverse} />
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, { backgroundColor: colors.buttonSecondary, borderColor: colors.border }]}
               onPress={() => router.push('/(auth)/signin')}
             >
-              <Text style={styles.secondaryButtonText}>Sign In</Text>
+              <Text style={[styles.secondaryButtonText, { color: colors.buttonSecondaryText }]}>Sign In</Text>
             </TouchableOpacity>
             
-            <Text style={styles.footerText}>
+            <Text style={[styles.footerText, { color: colors.textTertiary }]}>
               Join thousands of professionals improving their interview skills
             </Text>
           </View>
@@ -111,7 +119,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#3B82F6',
@@ -129,13 +136,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 42,
     fontWeight: 'bold',
-    color: '#1F2937',
     marginBottom: 16,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
-    color: '#6B7280',
     textAlign: 'center',
     lineHeight: 26,
     marginBottom: 48,
@@ -148,11 +153,9 @@ const styles = StyleSheet.create({
   feature: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     padding: 20,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -166,7 +169,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -182,7 +184,6 @@ const styles = StyleSheet.create({
   featureText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
     flex: 1,
   },
   ctaSection: {
@@ -190,7 +191,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   primaryButton: {
-    backgroundColor: '#3B82F6',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -208,31 +208,35 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   primaryButtonText: {
-    color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
   },
   secondaryButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 18,
     paddingHorizontal: 32,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.2)',
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6,
   },
   secondaryButtonText: {
-    color: '#3B82F6',
     fontSize: 18,
     fontWeight: '600',
   },
   footerText: {
     fontSize: 14,
-    color: '#9CA3AF',
     textAlign: 'center',
     marginTop: 16,
-    lineHeight: 20,
+    paddingHorizontal: 20,
   },
 });
 

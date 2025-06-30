@@ -16,6 +16,7 @@ import {
     View,
 } from 'react-native';
 import { useAuthStore } from '../../src/store/authStore';
+import { useThemeColors } from '../../src/store/themeStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,6 +27,12 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   const { signIn, signInWithOAuth } = useAuthStore();
+  const colors = useThemeColors();
+
+  // Get gradient colors from theme or fallback
+  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
+    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
+    : ['#0f172a', '#1e293b', '#334155'] as const);
 
   const handleEmailSignIn = async () => {
     if (!email || !password) {
@@ -55,9 +62,220 @@ const SignIn = () => {
     }
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 20,
+    },
+    glassContainer: {
+      position: 'relative',
+      alignItems: 'center',
+    },
+    card: {
+      width: '100%',
+      maxWidth: 400,
+      backgroundColor: colors.card,
+      borderRadius: 24,
+      padding: 32,
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 20,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 25,
+      elevation: 20,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 32,
+    },
+    logoContainer: {
+      marginBottom: 16,
+    },
+    logo: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: colors.primary + '20',
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: colors.primary,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+    logoText: {
+      fontSize: 28,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
+    form: {
+      gap: 20,
+    },
+    inputContainer: {
+      gap: 8,
+    },
+    inputLabel: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 16,
+      color: colors.text,
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    passwordContainer: {
+      position: 'relative',
+    },
+    passwordInput: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      paddingRight: 50,
+      fontSize: 16,
+      color: colors.text,
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    passwordToggle: {
+      position: 'absolute',
+      right: 16,
+      top: 17,
+    },
+    primaryButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      paddingVertical: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: colors.primary,
+      shadowOffset: {
+        width: 0,
+        height: 8,
+      },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 8,
+      marginTop: 8,
+    },
+    disabledButton: {
+      opacity: 0.7,
+    },
+    primaryButtonText: {
+      color: colors.textInverse,
+      fontSize: 18,
+      fontWeight: 'bold',
+    },
+    divider: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 24,
+      gap: 16,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.border,
+    },
+    dividerText: {
+      fontSize: 14,
+      color: colors.textTertiary,
+      fontWeight: '500',
+    },
+    oauthContainer: {
+      gap: 12,
+    },
+    oauthButton: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    oauthButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    footer: {
+      marginTop: 32,
+      alignItems: 'center',
+    },
+    footerText: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    footerLink: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+  });
+
   return (
     <LinearGradient
-      colors={['#f8fafc', '#e0f2fe', '#f3e8ff']}
+      colors={gradientColors as any}
       style={styles.container}
     >
       <KeyboardAvoidingView
@@ -86,7 +304,7 @@ const SignIn = () => {
                   <TextInput
                     style={styles.input}
                     placeholder="Enter your email"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={colors.placeholder}
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -101,7 +319,7 @@ const SignIn = () => {
                     <TextInput
                       style={styles.passwordInput}
                       placeholder="Enter your password"
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor={colors.placeholder}
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
@@ -115,7 +333,7 @@ const SignIn = () => {
                       <Ionicons
                         name={showPassword ? 'eye-off' : 'eye'}
                         size={20}
-                        color="#9CA3AF"
+                        color={colors.textTertiary}
                       />
                     </TouchableOpacity>
                   </View>
@@ -127,7 +345,7 @@ const SignIn = () => {
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator color="white" />
+                    <ActivityIndicator color={colors.textInverse} />
                   ) : (
                     <Text style={styles.primaryButtonText}>Sign In</Text>
                   )}
@@ -156,7 +374,7 @@ const SignIn = () => {
                     onPress={() => handleOAuthSignIn('github')}
                     disabled={loading}
                   >
-                    <Ionicons name="logo-github" size={20} color="#24292e" />
+                    <Ionicons name="logo-github" size={20} color={colors.text} />
                     <Text style={styles.oauthButtonText}>Continue with GitHub</Text>
                   </TouchableOpacity>
                 </View>
@@ -181,181 +399,5 @@ const SignIn = () => {
     </LinearGradient>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  glassContainer: {
-    position: 'relative',
-    alignItems: 'center',
-  },
-  card: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    padding: 32,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 20,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 25,
-    elevation: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  logoContainer: {
-    marginBottom: 16,
-  },
-  logo: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    fontSize: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  form: {
-    marginBottom: 24,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#1F2937',
-  },
-  passwordContainer: {
-    position: 'relative',
-  },
-  passwordInput: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    padding: 16,
-    paddingRight: 50,
-    fontSize: 16,
-    color: '#1F2937',
-  },
-  passwordToggle: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-    padding: 4,
-  },
-  primaryButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 24,
-    shadowColor: '#3B82F6',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  primaryButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    fontSize: 12,
-    color: '#9CA3AF',
-    textTransform: 'uppercase',
-    fontWeight: '500',
-  },
-  oauthContainer: {
-    gap: 12,
-  },
-  oauthButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
-  },
-  oauthButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  footer: {
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  footerLink: {
-    color: '#3B82F6',
-    fontWeight: '600',
-  },
-});
 
 export default SignIn; 

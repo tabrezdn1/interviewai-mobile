@@ -1,32 +1,37 @@
 import { router } from 'expo-router';
 import {
-    ArrowLeft,
-    ChevronRight,
-    CreditCard,
-    Receipt,
-    Settings as SettingsIcon,
-    Star,
-    User,
-    Zap
+  ArrowLeft,
+  ChevronRight,
+  CreditCard,
+  Moon,
+  Receipt,
+  Settings as SettingsIcon,
+  Star,
+  Sun,
+  User,
+  Zap
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Linking,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { DatabaseService, Profile, Subscription, SubscriptionPlan } from '../../../src/services/DatabaseService';
 import { stripeService } from '../../../src/services/StripeService';
 import { useAuthStore } from '../../../src/store/authStore';
+import { useThemeColors, useThemeStore } from '../../../src/store/themeStore';
 
 export default function SettingsScreen() {
   const { user, signOut } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
+  const colors = useThemeColors();
   const [isAnnual, setIsAnnual] = useState(false);
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
   const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
@@ -159,95 +164,396 @@ export default function SettingsScreen() {
     
     return (
       <>
-        <View style={styles.header}>
-          <SettingsIcon size={28} color="#1a1a1a" />
-          <Text style={styles.title}>Settings</Text>
+        {/* Modern Header */}
+        <View style={{
+          marginBottom: 32,
+          paddingHorizontal: 24,
+          paddingTop: 8,
+        }}>
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ 
+              fontSize: 32, 
+              fontWeight: '800', 
+              color: colors.text, 
+              marginBottom: 4,
+              letterSpacing: -0.5
+            }}>
+              Settings
+            </Text>
+            <Text style={{ 
+              fontSize: 16, 
+              color: colors.textSecondary,
+              fontWeight: '500'
+            }}>
+              Manage your account, preferences and billing
+            </Text>
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Profile</Text>
+        {/* Enhanced Profile Section */}
+        <View style={{
+          marginBottom: 32,
+          paddingHorizontal: 24,
+        }}>
+          <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
+            Profile
+          </Text>
           
-          <View style={styles.profileCard}>
-            <View style={styles.profileInfo}>
-              <User size={40} color="#6b7280" />
-              <View style={{ marginLeft: 12 }}>
-                <Text style={styles.profileName}>
+          <View style={{
+            backgroundColor: colors.card,
+            borderRadius: 16,
+            padding: 24,
+            shadowColor: colors.shadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 4,
+            borderWidth: 1,
+            borderColor: colors.borderLight,
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: colors.primary + '20',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 16,
+              }}>
+                <User size={28} color={colors.primary} />
+              </View>
+              
+              <View style={{ flex: 1 }}>
+                <Text style={{ 
+                  fontSize: 20, 
+                  fontWeight: '700', 
+                  color: colors.text, 
+                  marginBottom: 4,
+                  lineHeight: 24
+                }}>
                   {user?.name || userProfile?.name || 'User'}
                 </Text>
-                <Text style={styles.profileEmail}>
+                <Text style={{ 
+                  fontSize: 14, 
+                  color: colors.textSecondary,
+                  fontWeight: '500',
+                  marginBottom: 8
+                }}>
                   {user?.email}
                 </Text>
+                
+                {/* Plan Badge */}
+                <View style={{
+                  backgroundColor: colors.primary + '20',
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 8,
+                  alignSelf: 'flex-start',
+                }}>
+                  <Text style={{ 
+                    fontSize: 12, 
+                    color: colors.primary, 
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5
+                  }}>
+                    {currentPlan.name}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Billing</Text>
+        {/* Preferences Section */}
+        <View style={{
+          marginBottom: 32,
+          paddingHorizontal: 24,
+        }}>
+          <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
+            Preferences
+          </Text>
+          
+          {/* Theme Toggle */}
+          <TouchableOpacity 
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: 12,
+              padding: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              shadowColor: colors.shadow,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.05,
+              shadowRadius: 4,
+              elevation: 2,
+              borderWidth: 1,
+              borderColor: colors.borderLight,
+              marginBottom: 12,
+            }}
+            onPress={toggleTheme}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{
+                backgroundColor: colors.surface,
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 16,
+              }}>
+                {theme === 'dark' ? 
+                  <Moon size={20} color={colors.text} /> : 
+                  <Sun size={20} color={colors.text} />
+                }
+              </View>
+              <View>
+                <Text style={{ 
+                  fontSize: 16, 
+                  color: colors.text, 
+                  fontWeight: '600',
+                  marginBottom: 2
+                }}>
+                  Theme
+                </Text>
+                <Text style={{ 
+                  fontSize: 13, 
+                  color: colors.textSecondary,
+                  fontWeight: '500'
+                }}>
+                  Toggle between light and dark
+                </Text>
+              </View>
+            </View>
+            
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ 
+                fontSize: 14, 
+                color: colors.primary, 
+                fontWeight: '600',
+                marginRight: 8
+              }}>
+                {theme === 'dark' ? 'Dark' : 'Light'}
+              </Text>
+              <ChevronRight size={20} color={colors.textTertiary} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Billing Section */}
+        <View style={{
+          marginBottom: 32,
+          paddingHorizontal: 24,
+        }}>
+          <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
+            Billing & Subscription
+          </Text>
           
           <TouchableOpacity 
-            style={styles.billingCard}
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: 16,
+              padding: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              shadowColor: colors.shadow,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.08,
+              shadowRadius: 12,
+              elevation: 4,
+              borderWidth: 1,
+              borderColor: colors.borderLight,
+            }}
             onPress={() => setCurrentView('billing')}
           >
-            <View style={styles.billingIconContainer}>
-              <Receipt size={24} color="#007AFF" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+              <View style={{
+                backgroundColor: colors.primary + '20',
+                width: 50,
+                height: 50,
+                borderRadius: 12,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 16,
+              }}>
+                <Receipt size={24} color={colors.primary} />
+              </View>
+              
+              <View style={{ flex: 1 }}>
+                <Text style={{ 
+                  fontSize: 18, 
+                  color: colors.primary, 
+                  fontWeight: '700',
+                  marginBottom: 4
+                }}>
+                  {currentPlan.name}
+                </Text>
+                <Text style={{ 
+                  fontSize: 14, 
+                  color: colors.textSecondary,
+                  fontWeight: '500'
+                }}>
+                  {currentPlan.minutes}
+                </Text>
+              </View>
             </View>
-            <View style={styles.billingInfo}>
-              <Text style={styles.currentPlan}>
-                {currentPlan.name}
-              </Text>
-              <Text style={styles.minutesRemaining}>
-                {currentPlan.minutes}
-              </Text>
-            </View>
-            <ChevronRight size={20} color="#ccc" />
+            
+            <ChevronRight size={24} color={colors.textTertiary} />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+        {/* Account Section */}
+        <View style={{
+          marginBottom: 32,
+          paddingHorizontal: 24,
+        }}>
+          <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
+            Account
+          </Text>
           
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Edit Profile</Text>
-            <ChevronRight size={20} color="#ccc" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Change Password</Text>
-            <ChevronRight size={20} color="#ccc" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Privacy Settings</Text>
-            <ChevronRight size={20} color="#ccc" />
-          </TouchableOpacity>
+          {[
+            { title: 'Edit Profile', icon: User, description: 'Update your personal information' },
+            { title: 'Change Password', icon: User, description: 'Update your account password' },
+            { title: 'Privacy Settings', icon: SettingsIcon, description: 'Manage your privacy preferences' },
+          ].map((item, index) => (
+            <TouchableOpacity 
+              key={index}
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: 12,
+                padding: 20,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 12,
+                shadowColor: colors.shadow,
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.03,
+                shadowRadius: 2,
+                elevation: 1,
+                borderWidth: 1,
+                borderColor: colors.borderLight,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                <View style={{
+                  backgroundColor: colors.surface,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 16,
+                }}>
+                  <item.icon size={20} color={colors.textSecondary} />
+                </View>
+                
+                <View style={{ flex: 1 }}>
+                  <Text style={{ 
+                    fontSize: 16, 
+                    color: colors.text, 
+                    fontWeight: '600',
+                    marginBottom: 2
+                  }}>
+                    {item.title}
+                  </Text>
+                  <Text style={{ 
+                    fontSize: 13, 
+                    color: colors.textSecondary,
+                    fontWeight: '500'
+                  }}>
+                    {item.description}
+                  </Text>
+                </View>
+              </View>
+              
+              <ChevronRight size={20} color={colors.textTertiary} />
+            </TouchableOpacity>
+          ))}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support</Text>
+        {/* Support Section */}
+        <View style={{
+          marginBottom: 32,
+          paddingHorizontal: 24,
+        }}>
+          <Text style={[styles.sectionTitle, { color: colors.text, paddingHorizontal: 0, marginBottom: 16 }]}>
+            Support
+          </Text>
           
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Help & FAQ</Text>
-            <ChevronRight size={20} color="#ccc" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Contact Support</Text>
-            <ChevronRight size={20} color="#ccc" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemText}>Terms of Service</Text>
-            <ChevronRight size={20} color="#ccc" />
-          </TouchableOpacity>
+          {[
+            { title: 'Help & FAQ', description: 'Get answers to common questions' },
+            { title: 'Contact Support', description: 'Reach out to our support team' },
+            { title: 'Terms of Service', description: 'Review our terms and conditions' },
+          ].map((item, index) => (
+            <TouchableOpacity 
+              key={index}
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: 12,
+                padding: 20,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 12,
+                shadowColor: colors.shadow,
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.03,
+                shadowRadius: 2,
+                elevation: 1,
+                borderWidth: 1,
+                borderColor: colors.borderLight,
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={{ 
+                  fontSize: 16, 
+                  color: colors.text, 
+                  fontWeight: '600',
+                  marginBottom: 2
+                }}>
+                  {item.title}
+                </Text>
+                <Text style={{ 
+                  fontSize: 13, 
+                  color: colors.textSecondary,
+                  fontWeight: '500'
+                }}>
+                  {item.description}
+                </Text>
+              </View>
+              
+              <ChevronRight size={20} color={colors.textTertiary} />
+            </TouchableOpacity>
+          ))}
         </View>
 
-        <TouchableOpacity 
-          style={styles.signOutButton}
-          onPress={handleSignOut}
-        >
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
+        {/* Sign Out Button */}
+        <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
+          <TouchableOpacity 
+            style={{
+              backgroundColor: colors.error + '10',
+              borderRadius: 12,
+              padding: 20,
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: colors.error + '30',
+            }}
+            onPress={handleSignOut}
+          >
+            <Text style={{ 
+              fontSize: 16, 
+              fontWeight: '600', 
+              color: colors.error 
+            }}>
+              Sign Out
+            </Text>
+          </TouchableOpacity>
+        </View>
       </>
     );
   };
@@ -257,29 +563,29 @@ export default function SettingsScreen() {
     
     return (
       <>
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.background }]}>
           <TouchableOpacity
             onPress={() => setCurrentView('main')}
             style={styles.backButton}
           >
-            <ArrowLeft size={24} color="#1a1a1a" />
+            <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.title}>Billing & Plans</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Billing & Plans</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Current Plan</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Current Plan</Text>
           
-          <View style={styles.currentBillingCard}>
+          <View style={[styles.currentBillingCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
             <View style={styles.currentBillingInfo}>
-              <Text style={styles.currentPlan}>
+              <Text style={[styles.currentPlan, { color: colors.primary }]}>
                 {currentPlan.name}
               </Text>
-              <Text style={styles.minutesRemaining}>
+              <Text style={[styles.minutesRemaining, { color: colors.textSecondary }]}>
                 {currentPlan.minutes}
               </Text>
               {userProfile?.subscription_status && userProfile.subscription_status !== 'inactive' && (
-                <Text style={styles.subscriptionStatus}>
+                <Text style={[styles.subscriptionStatus, { color: colors.textTertiary }]}>
                   Status: {userProfile.subscription_status}
                 </Text>
               )}
@@ -289,93 +595,105 @@ export default function SettingsScreen() {
 
         {subscriptionPlans.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Available Plans</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Available Plans</Text>
             
             {/* Billing Toggle */}
-            <View style={styles.toggleContainer}>
+            <View style={[styles.toggleContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <TouchableOpacity
-                style={[styles.toggleButton, !isAnnual && styles.toggleButtonActive]}
+                style={[styles.toggleButton, !isAnnual && styles.toggleButtonActive, { backgroundColor: !isAnnual ? colors.primary : 'transparent' }]}
                 onPress={() => setIsAnnual(false)}
               >
-                <Text style={[styles.toggleText, !isAnnual && styles.toggleTextActive]}>
+                <Text style={[styles.toggleText, !isAnnual && styles.toggleTextActive, { color: !isAnnual ? colors.textInverse : colors.textSecondary }]}>
                   Monthly
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.toggleButton, isAnnual && styles.toggleButtonActive]}
+                style={[styles.toggleButton, isAnnual && styles.toggleButtonActive, { backgroundColor: isAnnual ? colors.primary : 'transparent' }]}
                 onPress={() => setIsAnnual(true)}
               >
-                <Text style={[styles.toggleText, isAnnual && styles.toggleTextActive]}>
-                  Annual <Text style={styles.savingsText}>Save 20%</Text>
+                <Text style={[styles.toggleText, isAnnual && styles.toggleTextActive, { color: isAnnual ? colors.textInverse : colors.textSecondary }]}>
+                  Annual
                 </Text>
               </TouchableOpacity>
             </View>
+            
+            {/* Show savings badge for annual */}
+            {isAnnual && (
+              <View style={[styles.savingsBadge, { backgroundColor: colors.success + '20' }]}>
+                <Text style={[styles.savingsText, { color: colors.success }]}>
+                  💰 Save up to 20% with annual billing
+                </Text>
+              </View>
+            )}
 
-            {/* Pricing Cards */}
-            {subscriptionPlans
-              .filter(plan => plan.interval_type === (isAnnual ? 'year' : 'month'))
-              .map((plan) => (
-                <View
-                  key={plan.id}
-                  style={[
-                    styles.pricingCard,
-                    plan.name.toLowerCase().includes('professional') && styles.popularCard
-                  ]}
-                >
-                  {plan.name.toLowerCase().includes('professional') && (
-                    <View style={styles.popularBadge}>
-                      <Text style={styles.popularBadgeText}>Most Popular</Text>
-                    </View>
-                  )}
-                  
-                  <View style={styles.cardHeader}>
-                    <View style={styles.planRow}>
-                      {getPlanIcon(plan.name)}
-                      <Text style={styles.planName}>{plan.name}</Text>
-                    </View>
-                    
-                    <View style={styles.priceContainer}>
-                      <Text style={styles.price}>${getPrice(plan)}</Text>
-                      <Text style={styles.pricePeriod}>/{plan.interval_type}</Text>
-                    </View>
-                    
-                    <Text style={styles.minutes}>
-                      {getMinutes(plan)} conversation minutes
-                    </Text>
-                    
-                    {plan.description && (
-                      <Text style={styles.planDescription}>
-                        {plan.description}
-                      </Text>
-                    )}
-                  </View>
-                  
-                  <TouchableOpacity
+            {/* Plan Cards */}
+            <View style={styles.plansContainer}>
+              {subscriptionPlans
+                .filter(plan => plan.interval_type === (isAnnual ? 'year' : 'month'))
+                .map((plan) => (
+                  <View 
+                    key={plan.id} 
                     style={[
-                      styles.subscribeButton,
-                      plan.name.toLowerCase().includes('professional') && styles.subscribeButtonPopular,
-                      isCreatingCheckout && checkoutPlanId === plan.id && styles.subscribeButtonLoading
+                      styles.planCard,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: plan.name?.toLowerCase().includes('professional') ? colors.primary : colors.border,
+                        borderWidth: plan.name?.toLowerCase().includes('professional') ? 2 : 1,
+                      }
                     ]}
-                    onPress={() => handleSubscribe(plan)}
-                    disabled={isCreatingCheckout}
                   >
-                    {isCreatingCheckout && checkoutPlanId === plan.id ? (
-                      <ActivityIndicator color="white" size="small" />
-                    ) : (
-                      <Text style={[styles.subscribeButtonText, plan.name.toLowerCase().includes('professional') && styles.subscribeButtonTextPopular]}>
-                        Subscribe
-                      </Text>
+                    {plan.name?.toLowerCase().includes('professional') && (
+                      <View style={[styles.popularBadge, { backgroundColor: colors.primary }]}>
+                        <Text style={[styles.popularText, { color: colors.textInverse }]}>Most Popular</Text>
+                      </View>
                     )}
-                  </TouchableOpacity>
-                </View>
-              ))}
-          </View>
-        )}
-
-        {isLoading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#007AFF" />
-            <Text style={styles.loadingText}>Loading plans...</Text>
+                    
+                    <View style={styles.planHeader}>
+                      <View style={styles.planIconContainer}>
+                        {getPlanIcon('star')}
+                      </View>
+                      <Text style={[styles.planTitle, { color: colors.text }]}>{plan.name}</Text>
+                      <Text style={[styles.planDescription, { color: colors.textSecondary }]}>{plan.description}</Text>
+                    </View>
+                    
+                    <View style={styles.planPricing}>
+                      <Text style={[styles.planPrice, { color: colors.text }]}>
+                        ${getPrice(plan)}<Text style={[styles.planPeriod, { color: colors.textTertiary }]}>/{isAnnual ? 'year' : 'month'}</Text>
+                      </Text>
+                      <Text style={[styles.planMinutes, { color: colors.textSecondary }]}>
+                        {getMinutes(plan)} conversation minutes
+                      </Text>
+                    </View>
+                    
+                    <TouchableOpacity
+                      style={[
+                        styles.subscribeButton,
+                        {
+                          backgroundColor: plan.name?.toLowerCase().includes('professional') ? colors.primary : colors.buttonSecondary,
+                        }
+                      ]}
+                      onPress={() => handleSubscribe(plan)}
+                      disabled={isCreatingCheckout && checkoutPlanId === plan.id}
+                    >
+                      {isCreatingCheckout && checkoutPlanId === plan.id ? (
+                        <ActivityIndicator 
+                          size="small" 
+                          color={plan.name?.toLowerCase().includes('professional') ? colors.textInverse : colors.buttonSecondaryText} 
+                        />
+                      ) : (
+                        <Text style={[
+                          styles.subscribeButtonText,
+                          {
+                            color: plan.name?.toLowerCase().includes('professional') ? colors.textInverse : colors.buttonSecondaryText,
+                          }
+                        ]}>
+                          Subscribe
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                ))}
+            </View>
           </View>
         )}
       </>
@@ -383,8 +701,12 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.content}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView 
+        style={{ flex: 1, backgroundColor: colors.background }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
         {currentView === 'main' ? renderMainSettings() : renderBillingPlans()}
       </ScrollView>
     </SafeAreaView>
@@ -552,9 +874,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#10b981',
   },
-  pricingCard: {
-    backgroundColor: '#fff',
+  savingsBadge: {
+    backgroundColor: '#007AFF20',
+    padding: 4,
+    borderRadius: 4,
+    marginBottom: 16,
+  },
+  savingsBadgeText: {
+    color: '#007AFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  plansContainer: {
     marginHorizontal: 20,
+  },
+  planCard: {
+    backgroundColor: '#fff',
     marginBottom: 16,
     borderRadius: 12,
     padding: 20,
@@ -564,68 +899,41 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  popularCard: {
-    borderWidth: 2,
-    borderColor: '#007AFF',
-  },
-  popularBadge: {
-    position: 'absolute',
-    top: -8,
-    left: 20,
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  popularBadgeText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  cardHeader: {
+  planHeader: {
     marginBottom: 16,
   },
-  planRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
+  planIconContainer: {
+    marginRight: 8,
   },
-  planName: {
+  planTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#1a1a1a',
-    marginLeft: 8,
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 4,
-  },
-  price: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
-  pricePeriod: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 4,
-  },
-  savings: {
-    fontSize: 12,
-    color: '#10b981',
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  minutes: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
   },
   planDescription: {
     fontSize: 12,
     color: '#888',
     fontStyle: 'italic',
+  },
+  planPricing: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 4,
+  },
+  planPrice: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+  },
+  planPeriod: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 4,
+  },
+  planMinutes: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
   },
   subscribeButton: {
     backgroundColor: '#f3f4f6',
@@ -636,19 +944,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 44,
   },
-  subscribeButtonPopular: {
-    backgroundColor: '#007AFF',
-  },
-  subscribeButtonLoading: {
-    opacity: 0.7,
-  },
   subscribeButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
   },
-  subscribeButtonTextPopular: {
+  popularBadge: {
+    position: 'absolute',
+    top: -8,
+    left: 20,
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  popularText: {
     color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
   signOutButton: {
     backgroundColor: '#fff',
@@ -670,12 +983,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ef4444',
   },
-  loadingContainer: {
-    alignItems: 'center',
-    padding: 20,
-  },
-  loadingText: {
-    marginTop: 8,
+  themeLabel: {
     fontSize: 14,
     color: '#666',
   },
