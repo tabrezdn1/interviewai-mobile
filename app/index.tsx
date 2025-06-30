@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
+import { LoadingComponent } from '../src/components';
 import { useAuthStore } from '../src/store/authStore';
 
 export default function Index() {
@@ -7,9 +7,10 @@ export default function Index() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8f9fa' }}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
+      <LoadingComponent 
+        message="Loading..."
+        size="large"
+      />
     );
   }
 

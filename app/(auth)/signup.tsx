@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     Dimensions,
+    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -16,6 +18,7 @@ import {
     View,
 } from 'react-native';
 import { useAuthStore } from '../../src/store/authStore';
+import { useThemeColors } from '../../src/store/themeStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,6 +30,12 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   const { signUp, signInWithOAuth } = useAuthStore();
+  const colors = useThemeColors();
+
+  // Get gradient colors from theme or fallback
+  const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
+    ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
+    : ['#0f172a', '#1e293b', '#334155'] as const);
 
   const handleEmailSignUp = async () => {
     if (!name || !email || !password) {
@@ -42,7 +51,11 @@ const SignUp = () => {
     setLoading(true);
     try {
       await signUp({ email, password, name });
-      // Navigation will be handled by auth state change
+      Alert.alert(
+        'Check your email',
+        'We sent you a confirmation link. Please check your email and click the link to verify your account.',
+        [{ text: 'OK', onPress: () => router.push('/(auth)/signin') }]
+      );
     } catch (error: any) {
       Alert.alert('Sign Up Failed', error.message || 'Please try again');
     } finally {
@@ -61,9 +74,241 @@ const SignUp = () => {
     }
   };
 
+  const handleClose = () => {
+    router.push('/(auth)/welcome');
+  };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 20,
+      minHeight: height * 0.85,
+    },
+    glassContainer: {
+      position: 'relative',
+      alignItems: 'center',
+    },
+    card: {
+      position: 'relative',
+      width: '100%',
+      maxWidth: 400,
+      backgroundColor: colors.card,
+      borderRadius: 20,
+      padding: 24,
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 12,
+      },
+      shadowOpacity: 0.15,
+      shadowRadius: 20,
+      elevation: 15,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+    },
+    closeButton: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 24,
+      marginTop: 8,
+    },
+    logo: {
+      width: 60,
+      height: 60,
+      marginBottom: 16,
+      shadowColor: colors.primary,
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 6,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: '800',
+      color: colors.text,
+      marginBottom: 6,
+      textAlign: 'center',
+      letterSpacing: -0.3,
+    },
+    subtitle: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 20,
+      fontWeight: '500',
+    },
+    form: {
+      gap: 16,
+    },
+    inputContainer: {
+      gap: 6,
+    },
+    inputLabel: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 16,
+      color: colors.text,
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.03,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+    passwordContainer: {
+      position: 'relative',
+    },
+    passwordInput: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      paddingRight: 45,
+      fontSize: 16,
+      color: colors.text,
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.03,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+    passwordToggle: {
+      position: 'absolute',
+      right: 14,
+      top: 14,
+    },
+    primaryButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      paddingVertical: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: colors.primary,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 6,
+      marginTop: 8,
+    },
+    disabledButton: {
+      opacity: 0.7,
+    },
+    primaryButtonText: {
+      color: colors.textInverse,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    divider: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 20,
+      gap: 12,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.border,
+    },
+    dividerText: {
+      fontSize: 13,
+      color: colors.textTertiary,
+      fontWeight: '500',
+    },
+    oauthContainer: {
+      gap: 10,
+    },
+    oauthButton: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.03,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+    oauthButtonText: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    footer: {
+      marginTop: 24,
+      alignItems: 'center',
+    },
+    footerText: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    footerLink: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+  });
+
   return (
     <LinearGradient
-      colors={['#f8fafc', '#e0f2fe', '#f3e8ff']}
+      colors={gradientColors}
       style={styles.container}
     >
       <KeyboardAvoidingView
@@ -74,13 +319,21 @@ const SignUp = () => {
           {/* Glassmorphism Background */}
           <View style={styles.glassContainer}>
             <View style={styles.card}>
+              {/* Close Button - Inside the card */}
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={handleClose}
+              >
+                <X size={18} color={colors.textSecondary} />
+              </TouchableOpacity>
+
               {/* Header */}
               <View style={styles.header}>
-                <View style={styles.logoContainer}>
-                  <View style={styles.logo}>
-                    <Text style={styles.logoText}>🎯</Text>
-                  </View>
-                </View>
+                <Image 
+                  source={require('../../assets/images/interviewai-logo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
                 <Text style={styles.title}>Create your account</Text>
                 <Text style={styles.subtitle}>Sign up to start practicing interviews with AI</Text>
               </View>
@@ -92,7 +345,7 @@ const SignUp = () => {
                   <TextInput
                     style={styles.input}
                     placeholder="Enter your full name"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={colors.placeholder}
                     value={name}
                     onChangeText={setName}
                     autoCapitalize="words"
@@ -105,7 +358,7 @@ const SignUp = () => {
                   <TextInput
                     style={styles.input}
                     placeholder="Enter your email"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={colors.placeholder}
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -120,7 +373,7 @@ const SignUp = () => {
                     <TextInput
                       style={styles.passwordInput}
                       placeholder="Enter your password (min. 6 characters)"
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor={colors.placeholder}
                       value={password}
                       onChangeText={setPassword}
                       secureTextEntry={!showPassword}
@@ -133,8 +386,8 @@ const SignUp = () => {
                     >
                       <Ionicons
                         name={showPassword ? 'eye-off' : 'eye'}
-                        size={20}
-                        color="#9CA3AF"
+                        size={18}
+                        color={colors.textTertiary}
                       />
                     </TouchableOpacity>
                   </View>
@@ -146,7 +399,7 @@ const SignUp = () => {
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator color="white" />
+                    <ActivityIndicator color={colors.textInverse} />
                   ) : (
                     <Text style={styles.primaryButtonText}>Create Account</Text>
                   )}
@@ -166,7 +419,7 @@ const SignUp = () => {
                     onPress={() => handleOAuthSignIn('google')}
                     disabled={loading}
                   >
-                    <Ionicons name="logo-google" size={20} color="#EA4335" />
+                    <Ionicons name="logo-google" size={18} color="#EA4335" />
                     <Text style={styles.oauthButtonText}>Continue with Google</Text>
                   </TouchableOpacity>
 
@@ -175,7 +428,7 @@ const SignUp = () => {
                     onPress={() => handleOAuthSignIn('github')}
                     disabled={loading}
                   >
-                    <Ionicons name="logo-github" size={20} color="#24292e" />
+                    <Ionicons name="logo-github" size={18} color={colors.text} />
                     <Text style={styles.oauthButtonText}>Continue with GitHub</Text>
                   </TouchableOpacity>
                 </View>
@@ -200,181 +453,5 @@ const SignUp = () => {
     </LinearGradient>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  glassContainer: {
-    position: 'relative',
-    alignItems: 'center',
-  },
-  card: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    padding: 32,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 20,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 25,
-    elevation: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  logoContainer: {
-    marginBottom: 16,
-  },
-  logo: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    fontSize: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  form: {
-    marginBottom: 24,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#1F2937',
-  },
-  passwordContainer: {
-    position: 'relative',
-  },
-  passwordInput: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    padding: 16,
-    paddingRight: 50,
-    fontSize: 16,
-    color: '#1F2937',
-  },
-  passwordToggle: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-    padding: 4,
-  },
-  primaryButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 24,
-    shadowColor: '#3B82F6',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  primaryButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    fontSize: 12,
-    color: '#9CA3AF',
-    textTransform: 'uppercase',
-    fontWeight: '500',
-  },
-  oauthContainer: {
-    gap: 12,
-  },
-  oauthButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
-  },
-  oauthButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  footer: {
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  footerLink: {
-    color: '#3B82F6',
-    fontWeight: '600',
-  },
-});
 
 export default SignUp; 

@@ -1,6 +1,5 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, Stack } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
+import { GradientLoadingComponent } from '../../src/components';
 import { AuthProvider } from '../../src/providers/AuthProvider';
 import { useAuthStore } from '../../src/store/authStore';
 import { useThemeColors } from '../../src/store/themeStore';
@@ -24,11 +23,11 @@ function AppLayoutContent() {
 
   if (loading) {
     return (
-      <LinearGradient colors={gradientColors as any} style={{ flex: 1 }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </LinearGradient>
+      <GradientLoadingComponent 
+        message="Loading app..."
+        size="large"
+        gradientColors={gradientColors as any}
+      />
     );
   }
 

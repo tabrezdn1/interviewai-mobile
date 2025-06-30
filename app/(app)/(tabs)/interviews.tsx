@@ -19,6 +19,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { LoadingComponent } from '../../../src/components';
 import { DatabaseService, Interview } from '../../../src/services/DatabaseService';
 import { InterviewService } from '../../../src/services/InterviewService';
 import { useAuthStore } from '../../../src/store/authStore';
@@ -1038,10 +1039,10 @@ const InterviewsScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 16, color: colors.textSecondary, fontSize: 16 }}>Loading interviews...</Text>
-      </View>
+      <LoadingComponent 
+        message="Loading interviews..."
+        size="large"
+      />
     );
   }
 

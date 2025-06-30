@@ -4,8 +4,8 @@ import { router } from 'expo-router';
 import React from 'react';
 import {
     Dimensions,
+    Image,
     SafeAreaView,
-    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -29,40 +29,36 @@ const Welcome = () => {
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.content}>
-          {/* Hero Section */}
-          <View style={styles.hero}>
-            <View style={styles.logoContainer}>
-              <View style={[styles.logo, { backgroundColor: colors.primary + '20' }]}>
-                <Text style={styles.logoText}>🎯</Text>
-              </View>
-            </View>
-            
+        <View style={styles.content}>
+          {/* Header Section */}
+          <View style={styles.header}>
+            <Image 
+              source={require('../../assets/images/interviewai-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
             <Text style={[styles.title, { color: colors.text }]}>InterviewAI</Text>
             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Master your interview skills with AI-powered practice sessions
+              Master interviews with AI-powered practice
             </Text>
-            
-            <View style={styles.featuresContainer}>
-              <View style={[styles.feature, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-                <View style={[styles.featureIcon, { backgroundColor: colors.surface }]}>
-                  <Ionicons name="videocam" size={24} color={colors.info} />
-                </View>
-                <Text style={[styles.featureText, { color: colors.text }]}>AI Video Interviews</Text>
+          </View>
+
+          {/* Features Section - Horizontal Pills */}
+          <View style={styles.featuresSection}>
+            <View style={styles.featuresGrid}>
+              <View style={[styles.featurePill, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <Ionicons name="videocam" size={16} color={colors.primary} />
+                <Text style={[styles.featurePillText, { color: colors.text }]}>AI Interviews</Text>
               </View>
               
-              <View style={[styles.feature, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-                <View style={[styles.featureIcon, { backgroundColor: colors.surface }]}>
-                  <Ionicons name="analytics" size={24} color={colors.success} />
-                </View>
-                <Text style={[styles.featureText, { color: colors.text }]}>Real-time Feedback</Text>
+              <View style={[styles.featurePill, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <Ionicons name="analytics" size={16} color={colors.success} />
+                <Text style={[styles.featurePillText, { color: colors.text }]}>Real-time Feedback</Text>
               </View>
               
-              <View style={[styles.feature, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
-                <View style={[styles.featureIcon, { backgroundColor: colors.surface }]}>
-                  <Ionicons name="trending-up" size={24} color={colors.warning} />
-                </View>
-                <Text style={[styles.featureText, { color: colors.text }]}>Performance Tracking</Text>
+              <View style={[styles.featurePill, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                <Ionicons name="trending-up" size={16} color={colors.warning} />
+                <Text style={[styles.featurePillText, { color: colors.text }]}>Progress Tracking</Text>
               </View>
             </View>
           </View>
@@ -74,21 +70,35 @@ const Welcome = () => {
               onPress={() => router.push('/(auth)/signup')}
             >
               <Text style={[styles.primaryButtonText, { color: colors.textInverse }]}>Get Started</Text>
-              <Ionicons name="arrow-forward" size={20} color={colors.textInverse} />
+              <Ionicons name="arrow-forward" size={18} color={colors.textInverse} />
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.secondaryButton, { backgroundColor: colors.buttonSecondary, borderColor: colors.border }]}
+              style={[styles.secondaryButton, { borderColor: colors.border }]}
               onPress={() => router.push('/(auth)/signin')}
             >
-              <Text style={[styles.secondaryButtonText, { color: colors.buttonSecondaryText }]}>Sign In</Text>
+              <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Already have an account? Sign In</Text>
             </TouchableOpacity>
-            
+          </View>
+
+          {/* Disclaimer */}
+          <View style={styles.disclaimer}>
+            <View style={[styles.disclaimerBox, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+              <Ionicons name="information-circle-outline" size={16} color={colors.primary} />
+              <Text style={[styles.disclaimerText, { color: colors.textSecondary }]}>
+                This mobile app helps you schedule interviews, view feedback, and manage your account. 
+                Live interviews are conducted on <Text style={[styles.disclaimerLink, { color: colors.primary }]}>interviewai.us</Text>
+              </Text>
+            </View>
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
             <Text style={[styles.footerText, { color: colors.textTertiary }]}>
-              Join thousands of professionals improving their interview skills
+              Join 10,000+ professionals improving their skills
             </Text>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -102,141 +112,141 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 40,
-  },
-  hero: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingBottom: 60,
+    paddingHorizontal: 24,
+    justifyContent: 'space-between',
+    paddingTop: height * 0.08,
+    paddingBottom: 20,
   },
-  logoContainer: {
+  header: {
+    alignItems: 'center',
     marginBottom: 24,
   },
   logo: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#3B82F6',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  logoText: {
-    fontSize: 40,
-  },
-  title: {
-    fontSize: 42,
-    fontWeight: 'bold',
+    width: 80,
+    height: 80,
     marginBottom: 16,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 18,
-    textAlign: 'center',
-    lineHeight: 26,
-    marginBottom: 48,
-    paddingHorizontal: 20,
-  },
-  featuresContainer: {
-    width: '100%',
-    gap: 24,
-  },
-  feature: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-    shadowColor: '#000',
+    shadowColor: '#3B82F6',
     shadowOffset: {
       width: 0,
       height: 4,
     },
     shadowOpacity: 0.1,
     shadowRadius: 12,
-    elevation: 6,
+    elevation: 8,
   },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
+  title: {
+    fontSize: 36,
+    fontWeight: '800',
+    marginBottom: 8,
+    textAlign: 'center',
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 22,
+    fontWeight: '500',
+    maxWidth: 280,
+  },
+  featuresSection: {
+    flex: 1,
     justifyContent: 'center',
-    marginRight: 16,
+    marginVertical: 32,
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  featurePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 8,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
-  featureText: {
-    fontSize: 16,
+  featurePillText: {
+    fontSize: 14,
     fontWeight: '600',
-    flex: 1,
   },
   ctaSection: {
     gap: 16,
-    paddingTop: 20,
+    marginBottom: 16,
   },
   primaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 32,
-    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 14,
     gap: 8,
     shadowColor: '#3B82F6',
     shadowOffset: {
       width: 0,
-      height: 8,
+      height: 6,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
   },
   primaryButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '700',
   },
   secondaryButton: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 14,
+    borderWidth: 1,
+    backgroundColor: 'transparent',
   },
   secondaryButtonText: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '600',
   },
+  disclaimer: {
+    marginBottom: 16,
+  },
+  disclaimerBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 8,
+    marginHorizontal: 4,
+  },
+  disclaimerText: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
+    flex: 1,
+  },
+  disclaimerLink: {
+    fontWeight: '600',
+  },
+  footer: {
+    alignItems: 'center',
+  },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
     textAlign: 'center',
-    marginTop: 16,
-    paddingHorizontal: 20,
+    fontWeight: '500',
   },
 });
 

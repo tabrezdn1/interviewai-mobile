@@ -2,16 +2,17 @@ import { router } from 'expo-router';
 import { Calendar, CreditCard, Settings } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Linking,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { LoadingComponent } from '../../src/components';
 import { getConversationMinutes, getProfile } from '../../src/services/ProfileService';
 import { PRICING_PLANS, stripeService } from '../../src/services/StripeService';
 import { useAuthStore } from '../../src/store/authStore';
@@ -104,10 +105,10 @@ const Billing: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text style={styles.loadingText}>Loading billing information...</Text>
-      </View>
+      <LoadingComponent 
+        message="Loading billing information..."
+        size="large"
+      />
     );
   }
 

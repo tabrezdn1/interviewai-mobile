@@ -8,7 +8,8 @@ import {
     Video, VideoOff
 } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { LoadingComponent } from '../../../src/components';
 import { InterviewService } from '../../../src/services/InterviewService';
 import { useAuthStore } from '../../../src/store/authStore';
 
@@ -125,11 +126,11 @@ const InterviewSession: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-        <StatusBar barStyle="light-content" />
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={{ marginTop: 16, color: 'white', fontSize: 16 }}>Loading interview...</Text>
-      </View>
+      <LoadingComponent 
+        message="Loading interview..."
+        size="large"
+        showBackground={false}
+      />
     );
   }
 

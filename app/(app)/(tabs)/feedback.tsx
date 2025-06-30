@@ -8,7 +8,6 @@ import {
 } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   RefreshControl,
   ScrollView,
@@ -16,6 +15,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { LoadingComponent } from '../../../src/components';
 import { DatabaseService, Interview } from '../../../src/services/DatabaseService';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useThemeColors } from '../../../src/store/themeStore';
@@ -409,10 +409,10 @@ const FeedbackScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 16, color: colors.textSecondary, fontSize: 16 }}>Loading feedback...</Text>
-      </View>
+      <LoadingComponent 
+        message="Loading feedback..."
+        size="large"
+      />
     );
   }
 

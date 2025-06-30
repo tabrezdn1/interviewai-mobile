@@ -17,6 +17,7 @@ import {
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { GradientLoadingComponent } from '../../../src/components';
 import { DatabaseService, Interview } from '../../../src/services/DatabaseService';
 import { InterviewFormData, InterviewService } from '../../../src/services/InterviewService';
 import { useAuthStore } from '../../../src/store/authStore';
@@ -1360,14 +1361,11 @@ const InterviewSetup: React.FC = () => {
 
   if (loading) {
     return (
-      <LinearGradient colors={gradientColors as any} style={{ flex: 1 }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={{ marginTop: 16, color: colors.textSecondary, fontSize: 16 }}>
-            Loading interview setup...
-          </Text>
-        </View>
-      </LinearGradient>
+      <GradientLoadingComponent 
+        message="Loading interview setup..."
+        size="large"
+        gradientColors={gradientColors as any}
+      />
     );
   }
 

@@ -51,21 +51,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       // Set up auth state listener
       supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session) {
-          // Check if this is the same session we already processed
-          if (get().currentSessionId === session.access_token) {
-            return;
-          }
-          
-          set({ currentSessionId: session.access_token });
-          await get().handleSession(session);
-        } else {
-          // User signed out
+        if (event === 'SIGNED_OUT' || !session) {
           set({ 
             currentSessionId: null, 
             user: null, 
-            isAuthenticated: false 
+            isAuthenticated: false,
+            loading: false
           });
+          return;
+        }
+        
+        if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          const currentState = get();
+          
+          if (currentState.currentSessionId !== session.access_token) {
+            set({ currentSessionId: session.access_token });
+            await get().handleSession(session);
+          }
         }
       });
       
@@ -139,10 +141,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         };
       }
       
-      set({ user: userProfile, isAuthenticated: true });
+      set({ user: userProfile, isAuthenticated: true, loading: false });
     } catch (error) {
       console.error('[AuthStore] Error handling session:', error);
-      set({ user: null, isAuthenticated: false });
+      set({ user: null, isAuthenticated: false, loading: false });
     }
   },
 
@@ -157,14 +159,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       if (error) throw error;
       
-      if (data.session) {
-        await get().handleSession(data.session);
-      }
+      // Auth state listener will handle the session
     } catch (error) {
       console.error('[AuthStore] Sign in error:', error);
-      throw error;
-    } finally {
       set({ loading: false });
+      throw error;
     }
   },
 
@@ -234,32 +233,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (error) throw error;
       
       if (data.user && data.session) {
-        await get().handleSession(data.session);
+        // Auth state listener will handle the session
       } else if (data.user && !data.session) {
         // Email confirmation required
+        set({ loading: false });
         throw new Error('Please check your email and click the confirmation link to complete your registration.');
       }
     } catch (error) {
       console.error('[AuthStore] Signup error:', error);
-      throw error;
-    } finally {
       set({ loading: false });
+      throw error;
     }
   },
 
   signOut: async () => {
+    // Clear local state immediately
+    set({ 
+      user: null, 
+      isAuthenticated: false, 
+      currentSessionId: null,
+      loading: false
+    });
+    
     try {
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        console.error('[AuthStore] Supabase signOut error:', error);
+      }
       
-      set({ 
-        user: null, 
-        isAuthenticated: false, 
-        currentSessionId: null 
-      });
+      // Force a session refresh to reset Supabase's internal state
+      await supabase.auth.getSession();
     } catch (error) {
       console.error('[AuthStore] Sign out error:', error);
-      throw error;
     }
   },
 

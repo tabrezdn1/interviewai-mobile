@@ -2,13 +2,13 @@ import { useRouter } from 'expo-router';
 import { CheckCircle, Clock, MessageSquare, Plus } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+import { LoadingComponent } from '../../../src/components';
 import { DatabaseService, Interview } from '../../../src/services/DatabaseService';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useThemeColors } from '../../../src/store/themeStore';
@@ -354,10 +354,10 @@ const Dashboard: React.FC = () => {
 
   if (authLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ marginTop: 16, color: colors.textSecondary, fontSize: 16 }}>Loading...</Text>
-      </View>
+      <LoadingComponent 
+        message="Loading..."
+        size="large"
+      />
     );
   }
 

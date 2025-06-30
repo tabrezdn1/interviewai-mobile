@@ -15,13 +15,13 @@ import {
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     ScrollView,
     Text,
     TouchableOpacity,
     View
 } from 'react-native';
+import { LoadingComponent } from '../../../src/components';
 import { DatabaseService, Feedback, Interview } from '../../../src/services/DatabaseService';
 import { useAuthStore } from '../../../src/store/authStore';
 import { useThemeColors } from '../../../src/store/themeStore';
@@ -1218,22 +1218,10 @@ Explore more creative problem-solving approaches and think beyond conventional s
 
   if (loading) {
     return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: colors.background 
-      }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ 
-          marginTop: 16, 
-          color: colors.textSecondary, 
-          fontSize: 16,
-          fontWeight: '500'
-        }}>
-          Loading feedback...
-        </Text>
-      </View>
+      <LoadingComponent 
+        message="Loading feedback..."
+        size="large"
+      />
     );
   }
 

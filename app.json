@@ -4,7 +4,7 @@
     "slug": "interviewai-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/interviewai-logo.png",
     "scheme": "interviewai",
     "userInterfaceStyle": "light",
     "splash": {
@@ -26,7 +26,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/interviewai-logo.png"
     },
     "plugins": [
       "expo-router"

@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     Dimensions,
+    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -33,6 +35,10 @@ const SignIn = () => {
   const gradientColors = colors.gradientBackground || (colors.background === '#f8fafc' 
     ? ['#f8fafc', '#e0f2fe', '#f3e8ff'] as const
     : ['#0f172a', '#1e293b', '#334155'] as const);
+
+  const handleClose = () => {
+    router.push('/(auth)/welcome');
+  };
 
   const handleEmailSignIn = async () => {
     if (!email || !password) {
@@ -73,75 +79,92 @@ const SignIn = () => {
       flexGrow: 1,
       justifyContent: 'center',
       padding: 20,
+      minHeight: height * 0.8,
     },
     glassContainer: {
       position: 'relative',
       alignItems: 'center',
     },
     card: {
+      position: 'relative',
       width: '100%',
       maxWidth: 400,
       backgroundColor: colors.card,
-      borderRadius: 24,
-      padding: 32,
+      borderRadius: 20,
+      padding: 24,
       shadowColor: colors.shadow,
       shadowOffset: {
         width: 0,
-        height: 20,
+        height: 12,
       },
-      shadowOpacity: 0.25,
-      shadowRadius: 25,
-      elevation: 20,
+      shadowOpacity: 0.15,
+      shadowRadius: 20,
+      elevation: 15,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+    },
+    closeButton: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: colors.shadow,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
       borderWidth: 1,
       borderColor: colors.borderLight,
     },
     header: {
       alignItems: 'center',
-      marginBottom: 32,
-    },
-    logoContainer: {
-      marginBottom: 16,
+      marginBottom: 24,
+      marginTop: 8,
     },
     logo: {
-      width: 64,
-      height: 64,
-      borderRadius: 32,
-      backgroundColor: colors.primary + '20',
-      alignItems: 'center',
-      justifyContent: 'center',
+      width: 60,
+      height: 60,
+      marginBottom: 16,
       shadowColor: colors.primary,
       shadowOffset: {
         width: 0,
-        height: 4,
+        height: 3,
       },
-      shadowOpacity: 0.3,
+      shadowOpacity: 0.1,
       shadowRadius: 8,
-      elevation: 8,
-    },
-    logoText: {
-      fontSize: 28,
+      elevation: 6,
     },
     title: {
       fontSize: 28,
-      fontWeight: 'bold',
+      fontWeight: '800',
       color: colors.text,
-      marginBottom: 8,
+      marginBottom: 6,
       textAlign: 'center',
+      letterSpacing: -0.3,
     },
     subtitle: {
-      fontSize: 16,
+      fontSize: 15,
       color: colors.textSecondary,
       textAlign: 'center',
-      lineHeight: 22,
+      lineHeight: 20,
+      fontWeight: '500',
     },
     form: {
-      gap: 20,
+      gap: 16,
     },
     inputContainer: {
-      gap: 8,
+      gap: 6,
     },
     inputLabel: {
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '600',
       color: colors.text,
     },
@@ -150,18 +173,18 @@ const SignIn = () => {
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
       fontSize: 16,
       color: colors.text,
       shadowColor: colors.shadow,
       shadowOffset: {
         width: 0,
-        height: 2,
+        height: 1,
       },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
+      shadowOpacity: 0.03,
+      shadowRadius: 2,
+      elevation: 1,
     },
     passwordContainer: {
       position: 'relative',
@@ -171,39 +194,39 @@ const SignIn = () => {
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      paddingRight: 50,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      paddingRight: 45,
       fontSize: 16,
       color: colors.text,
       shadowColor: colors.shadow,
       shadowOffset: {
         width: 0,
-        height: 2,
+        height: 1,
       },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
+      shadowOpacity: 0.03,
+      shadowRadius: 2,
+      elevation: 1,
     },
     passwordToggle: {
       position: 'absolute',
-      right: 16,
-      top: 17,
+      right: 14,
+      top: 14,
     },
     primaryButton: {
       backgroundColor: colors.primary,
       borderRadius: 12,
-      paddingVertical: 16,
+      paddingVertical: 14,
       alignItems: 'center',
       justifyContent: 'center',
       shadowColor: colors.primary,
       shadowOffset: {
         width: 0,
-        height: 8,
+        height: 4,
       },
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      elevation: 8,
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 6,
       marginTop: 8,
     },
     disabledButton: {
@@ -211,14 +234,14 @@ const SignIn = () => {
     },
     primaryButtonText: {
       color: colors.textInverse,
-      fontSize: 18,
-      fontWeight: 'bold',
+      fontSize: 16,
+      fontWeight: '700',
     },
     divider: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginVertical: 24,
-      gap: 16,
+      marginVertical: 20,
+      gap: 12,
     },
     dividerLine: {
       flex: 1,
@@ -226,44 +249,44 @@ const SignIn = () => {
       backgroundColor: colors.border,
     },
     dividerText: {
-      fontSize: 14,
+      fontSize: 13,
       color: colors.textTertiary,
       fontWeight: '500',
     },
     oauthContainer: {
-      gap: 12,
+      gap: 10,
     },
     oauthButton: {
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 12,
-      paddingVertical: 14,
+      paddingVertical: 12,
       paddingHorizontal: 16,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 12,
+      gap: 10,
       shadowColor: colors.shadow,
       shadowOffset: {
         width: 0,
-        height: 2,
+        height: 1,
       },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
+      shadowOpacity: 0.03,
+      shadowRadius: 2,
+      elevation: 1,
     },
     oauthButtonText: {
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: '600',
       color: colors.text,
     },
     footer: {
-      marginTop: 32,
+      marginTop: 24,
       alignItems: 'center',
     },
     footerText: {
-      fontSize: 16,
+      fontSize: 15,
       color: colors.textSecondary,
       textAlign: 'center',
     },
@@ -274,10 +297,7 @@ const SignIn = () => {
   });
 
   return (
-    <LinearGradient
-      colors={gradientColors as any}
-      style={styles.container}
-    >
+    <LinearGradient colors={gradientColors as any} style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -286,13 +306,21 @@ const SignIn = () => {
           {/* Glassmorphism Background */}
           <View style={styles.glassContainer}>
             <View style={styles.card}>
+              {/* Close Button - Inside the card */}
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={handleClose}
+              >
+                <X size={18} color={colors.textSecondary} />
+              </TouchableOpacity>
+
               {/* Header */}
               <View style={styles.header}>
-                <View style={styles.logoContainer}>
-                  <View style={styles.logo}>
-                    <Text style={styles.logoText}>🎯</Text>
-                  </View>
-                </View>
+                <Image 
+                  source={require('../../assets/images/interviewai-logo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
                 <Text style={styles.title}>Welcome back</Text>
                 <Text style={styles.subtitle}>Sign in to continue your interview practice</Text>
               </View>
@@ -332,7 +360,7 @@ const SignIn = () => {
                     >
                       <Ionicons
                         name={showPassword ? 'eye-off' : 'eye'}
-                        size={20}
+                        size={18}
                         color={colors.textTertiary}
                       />
                     </TouchableOpacity>
@@ -365,7 +393,7 @@ const SignIn = () => {
                     onPress={() => handleOAuthSignIn('google')}
                     disabled={loading}
                   >
-                    <Ionicons name="logo-google" size={20} color="#EA4335" />
+                    <Ionicons name="logo-google" size={18} color="#EA4335" />
                     <Text style={styles.oauthButtonText}>Continue with Google</Text>
                   </TouchableOpacity>
 
@@ -374,7 +402,7 @@ const SignIn = () => {
                     onPress={() => handleOAuthSignIn('github')}
                     disabled={loading}
                   >
-                    <Ionicons name="logo-github" size={20} color={colors.text} />
+                    <Ionicons name="logo-github" size={18} color={colors.text} />
                     <Text style={styles.oauthButtonText}>Continue with GitHub</Text>
                   </TouchableOpacity>
                 </View>

@@ -285,7 +285,7 @@ export class DatabaseService {
         .from('feedback')
         .select('*')
         .eq('interview_id', interviewId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -349,7 +349,7 @@ export class DatabaseService {
         `)
         .eq('user_id', userId)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
